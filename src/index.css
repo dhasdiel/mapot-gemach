@@ -456,28 +456,52 @@ label,
   width: 100%;
   margin-top: 4vh;
   margin-bottom: 4vh;
+  text-align: center;
 }
 
-.guide-card h3 {
-  font-size: 1rem;
-  color: #6d5c44;
-  margin: 16px 0 6px;
-}
-
-.guide-row {
+.guide-step {
+  min-height: 200px;
   display: flex;
-  gap: 10px;
-  padding: 5px 0;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
 }
 
-.guide-row strong {
-  flex: 0 0 38%;
-  font-size: 0.9rem;
+.guide-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f3ede3;
+  color: #6d5c44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
 }
 
-.guide-row .muted {
-  flex: 1;
+.guide-step h2 {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+}
+
+.guide-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.guide-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d8d0c4;
+  transition: background 0.15s;
+}
+
+.guide-dots span.on {
+  background: #6d5c44;
 }
 
 /* phone: cells are ~45px wide — Hebrew date and chip text don't fit, so

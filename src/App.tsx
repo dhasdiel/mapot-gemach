@@ -65,7 +65,7 @@ export default function App() {
         <h1 style={{ margin: "8px 0 16px" }}>גמ״ח מפות</h1>
         <GuideButton onClick={() => setShowGuide(true)} />
       </div>
-      {showGuide && <Guide onClose={closeGuide} />}
+      {showGuide && <Guide onClose={closeGuide} onNavigate={setTab} />}
       <div className="tabs" role="tablist" aria-label="ניווט">
         <button role="tab" aria-selected={tab === "loans"} aria-controls="main-panel" className={tab === "loans" ? "active" : ""} onClick={() => setTab("loans")}>
           השאלות
