@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-23T12:30:00Z",
+  "title": "Design System: mapot-gemach",
+  "extensions": {
+    "colorMeta": {
+      "parchment": { "role": "neutral", "displayName": "Parchment", "canonical": "#f6f3ee", "tonalRamp": ["#4a443c", "#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#ddd6c9", "#ece7dc", "#f6f3ee"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#2d2a26", "tonalRamp": ["#2d2a26", "#453f38", "#5c544a", "#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#e6e0d6"] },
+      "walnut": { "role": "primary", "displayName": "Walnut", "canonical": "#6d5c44", "tonalRamp": ["#3a3023", "#4d4130", "#6d5c44", "#8a7660", "#a89582", "#c6b5a4", "#e0d4c7", "#f0e9df"] },
+      "card-paper": { "role": "neutral", "displayName": "Card Paper", "canonical": "#ffffff", "tonalRamp": ["#8a8378", "#a89f93", "#c6beb1", "#ddd6c9", "#ece7dc", "#f6f3ee", "#fbfaf7", "#ffffff"] },
+      "card-edge": { "role": "neutral", "displayName": "Card Edge", "canonical": "#e6e0d6", "tonalRamp": ["#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#d8d0c4", "#e6e0d6", "#f0ece4", "#faf8f4"] },
+      "field-edge": { "role": "neutral", "displayName": "Field Edge", "canonical": "#d8d0c4", "tonalRamp": ["#5c544a", "#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#d8d0c4", "#e8e2d8", "#f4f1ea"] },
+      "muted-warm": { "role": "neutral", "displayName": "Muted Warm", "canonical": "#6f665a", "tonalRamp": ["#2d2a26", "#453f38", "#5c544a", "#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#e6e0d6"] },
+      "label-warm": { "role": "neutral", "displayName": "Label Warm", "canonical": "#5c544a", "tonalRamp": ["#2d2a26", "#453f38", "#5c544a", "#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#e6e0d6"] },
+      "stone": { "role": "neutral", "displayName": "Stone", "canonical": "#eee9e0", "tonalRamp": ["#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#ddd6c9", "#e3dac9", "#eee9e0", "#f7f4ee"] },
+      "stone-hover": { "role": "neutral", "displayName": "Stone Hover", "canonical": "#e3dac9", "tonalRamp": ["#6f665a", "#8a8378", "#a89f93", "#c6beb1", "#d8d0c4", "#e3dac9", "#ece5d8", "#f5f1e9"] },
+      "late-red": { "role": "primary", "displayName": "Late Red", "canonical": "#b3261e", "tonalRamp": ["#5c0f0a", "#7c1810", "#b3261e", "#cf4a42", "#e07a72", "#eba9a2", "#f5cdc9", "#fbe4e2"] },
+      "late-wash": { "role": "neutral", "displayName": "Late Wash", "canonical": "#fbe4e2", "tonalRamp": ["#b3261e", "#cf4a42", "#e07a72", "#eba9a2", "#f5cdc9", "#f9d9d6", "#fbe4e2", "#fdf2f1"] },
+      "late-card": { "role": "neutral", "displayName": "Late Card", "canonical": "#fdf6f5", "tonalRamp": ["#b3261e", "#e07a72", "#eba9a2", "#f5cdc9", "#f9d9d6", "#fbe4e2", "#fdf6f5", "#fefafa"] },
+      "late-edge": { "role": "neutral", "displayName": "Late Edge", "canonical": "#e5a09a", "tonalRamp": ["#b3261e", "#cf4a42", "#e07a72", "#e5a09a", "#eba9a2", "#f5cdc9", "#fbe4e2", "#fdf2f1"] },
+      "ok-green": { "role": "primary", "displayName": "OK Green", "canonical": "#1e7a3c", "tonalRamp": ["#0f3d1e", "#145c2e", "#1e7a3c", "#349654", "#5cb177", "#8ecaa1", "#c3e3cd", "#e6f4ea"] },
+      "ok-wash": { "role": "neutral", "displayName": "OK Wash", "canonical": "#e6f4ea", "tonalRamp": ["#1e7a3c", "#349654", "#5cb177", "#8ecaa1", "#c3e3cd", "#d8ecdd", "#e6f4ea", "#f3faf5"] },
+      "warn-amber": { "role": "primary", "displayName": "Warn Amber", "canonical": "#7c4a00", "tonalRamp": ["#3d2400", "#5c3800", "#7c4a00", "#9e6317", "#c08338", "#d9a868", "#ebcba0", "#fdf0e0"] },
+      "warn-wash": { "role": "neutral", "displayName": "Warn Wash", "canonical": "#fdf0e0", "tonalRamp": ["#7c4a00", "#9e6317", "#c08338", "#d9a868", "#ebcba0", "#f4dec0", "#fdf0e0", "#fef8f0"] },
+      "linen-pick": { "role": "neutral", "displayName": "Linen Pick", "canonical": "#e5d9be", "tonalRamp": ["#6d5c44", "#8a7660", "#a89582", "#c6b5a4", "#d8c9b1", "#e5d9be", "#efe6d4", "#f8f2e9"] },
+      "shabbat-wash": { "role": "neutral", "displayName": "Shabbat Wash", "canonical": "#efe7d8", "tonalRamp": ["#5c544a", "#8a8378", "#a89f93", "#c6beb1", "#d8cfbc", "#e4dbcb", "#efe7d8", "#f7f3eb"] },
+      "chag-wash": { "role": "neutral", "displayName": "Chag Wash", "canonical": "#f9f0da", "tonalRamp": ["#6d4a00", "#9e6317", "#c08338", "#d9a868", "#ebcba0", "#f4dec0", "#f9f0da", "#fcf7ec"] },
+      "chag-shabbat-wash": { "role": "neutral", "displayName": "Chag-Shabbat Wash", "canonical": "#f3e9d2", "tonalRamp": ["#6d4a00", "#8a7660", "#b09a6e", "#c6b08a", "#dccdab", "#f3e9d2", "#f8f0e0", "#fcf7ee"] },
+      "selected-wash": { "role": "neutral", "displayName": "Selected Wash", "canonical": "#f3ede3", "tonalRamp": ["#6d5c44", "#8a7660", "#a89582", "#c6b5a4", "#ddd1c0", "#f3ede3", "#f8f4ec", "#fcf9f5"] },
+      "holiday-ink": { "role": "primary", "displayName": "Holiday Ink", "canonical": "#6d4a00", "tonalRamp": ["#3d2400", "#5c3800", "#6d4a00", "#9e6317", "#c08338", "#d9a868", "#ebcba0", "#f4ead5"] },
+      "holiday-wash": { "role": "neutral", "displayName": "Holiday Wash", "canonical": "#f4ead5", "tonalRamp": ["#6d4a00", "#9e6317", "#c08338", "#d9a868", "#ebcba0", "#f4ead5", "#f9f1e3", "#fcf8f0"] },
+      "shabbat-chip": { "role": "neutral", "displayName": "Shabbat Chip", "canonical": "#e4dbcb", "tonalRamp": ["#5c544a", "#8a8378", "#a89f93", "#c6beb1", "#d8cfbc", "#e4dbcb", "#efe8db", "#f7f4ec"] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "App title only — 'גמח מפות'." },
+      "title": { "displayName": "Title", "purpose": "Section headers: 'באיחור (n)', 'השאלות פעילות', month names." },
+      "body": { "displayName": "Body", "purpose": "Card text and form fields; 1rem minimum on inputs to prevent iOS zoom." },
+      "label": { "displayName": "Label", "purpose": "Form labels and muted metadata; always Label Warm or Muted Warm." },
+      "micro": { "displayName": "Micro", "purpose": "Hebrew dates and chips inside calendar cells; floor is 0.72rem." }
+    },
+    "shadows": [
+      { "name": "card-lift", "value": "0 1px 3px rgba(80, 66, 45, 0.08)", "purpose": "Separates white cards from the parchment field; the only shadow in the system." }
+    ],
+    "motion": [
+      { "name": "hover-brighten", "value": "filter: brightness(1.05)", "purpose": "Instant hover feedback on primary buttons — no transition, phone-first UI." }
+    ],
+    "breakpoints": [
+      { "name": "container", "value": "720px", "purpose": "Max content width; the app is one phone-first column at every viewport." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The affirmative action — שמירה, הוספה. Walnut fill, ≥44px tall.",
+      "html": "<button class=\"ds-btn\">שמירה</button>",
+      "css": ".ds-btn { font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; font-size: 0.95rem; border: none; border-radius: 10px; padding: 10px 18px; min-height: 44px; cursor: pointer; background: #6d5c44; color: #fff; } .ds-btn:hover:not(:disabled) { filter: brightness(1.05); } .ds-btn:focus-visible { outline: 2px solid #6d5c44; outline-offset: 2px; } .ds-btn:disabled { opacity: 0.5; cursor: default; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Toggles, dismissals, +שבוע. Stone fill; hover shifts to Stone Hover.",
+      "html": "<button class=\"ds-btn-secondary\">+שבוע</button>",
+      "css": ".ds-btn-secondary { font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; font-size: 0.95rem; border: none; border-radius: 10px; padding: 10px 18px; min-height: 44px; cursor: pointer; background: #eee9e0; color: #2d2a26; } .ds-btn-secondary:hover:not(:disabled) { background: #e3dac9; } .ds-btn-secondary:focus-visible { outline: 2px solid #6d5c44; outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Ghost Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "מחיקה only. Transparent + Late Red text; never the biggest control on a card.",
+      "html": "<button class=\"ds-btn-danger\">מחיקה</button>",
+      "css": ".ds-btn-danger { font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; font-size: 0.95rem; border: none; border-radius: 10px; padding: 10px 12px; min-height: 44px; cursor: pointer; background: transparent; color: #b3261e; } .ds-btn-danger:hover:not(:disabled) { background: #fbe4e2; } .ds-btn-danger:focus-visible { outline: 2px solid #6d5c44; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field on Field Edge, 44px tall, 1rem text (no iOS zoom). Label sits above in Label Warm.",
+      "html": "<label class=\"ds-label\" for=\"ds-f\">שם</label><input class=\"ds-input\" id=\"ds-f\" placeholder=\"שרה כהן\">",
+      "css": ".ds-label { display: block; font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; font-size: 0.85rem; color: #5c544a; margin: 12px 0 4px; } .ds-input { font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; font-size: 1rem; padding: 10px 12px; min-height: 44px; border: 1px solid #d8d0c4; border-radius: 10px; background: #fff; color: #2d2a26; width: 100%; } .ds-input:focus-visible { outline: 2px solid #6d5c44; outline-offset: 2px; }"
+    },
+    {
+      "name": "Loan Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "White paper card on parchment, 1px edge, faint warm lift. Overdue variant tints the whole card.",
+      "html": "<div class=\"ds-card\"><strong>שרה כהן</strong> <span class=\"ds-badge-late\">באיחור 3 ימים</span><div class=\"ds-muted\">להחזרה: 23.9 — א׳ בתשרי</div></div><div class=\"ds-card ds-card-overdue\"><strong>רחל לוי</strong> <span class=\"ds-badge-late\">באיחור 3 ימים</span></div>",
+      "css": ".ds-card { font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; color: #2d2a26; background: #fff; border: 1px solid #e6e0d6; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(80,66,45,0.08); } .ds-card-overdue { border-color: #e5a09a; background: #fdf6f5; } .ds-muted { color: #6f665a; font-size: 0.85rem; margin-top: 4px; } .ds-badge-late { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; background: #fbe4e2; color: #b3261e; }"
+    },
+    {
+      "name": "Status Badges",
+      "kind": "chip",
+      "refersTo": "badge-late",
+      "description": "Pills carrying the app's three meanings: late, returned, caution/visitor.",
+      "html": "<span class=\"ds-badge ds-late\">באיחור 3 ימים</span> <span class=\"ds-badge ds-ok\">הוחזר</span> <span class=\"ds-badge ds-warn\">מבקר</span>",
+      "css": ".ds-badge { display: inline-block; font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; } .ds-late { background: #fbe4e2; color: #b3261e; } .ds-ok { background: #e6f4ea; color: #1e7a3c; } .ds-warn { background: #fdf0e0; color: #7c4a00; }"
+    },
+    {
+      "name": "Return Notice with Undo",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "OK Wash confirmation bar; the undo action lives inline, exactly where the mis-tap happened.",
+      "html": "<div class=\"ds-notice\"><span>✓ חזר למלאי — שרה כהן</span><button class=\"ds-undo\">בטל</button></div>",
+      "css": ".ds-notice { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; background: #e6f4ea; color: #1e7a3c; border-radius: 10px; padding: 10px 14px; margin-bottom: 10px; font-weight: 600; } .ds-undo { font-family: inherit; font-size: inherit; min-height: 0; padding: 4px 10px; background: transparent; border: none; color: #1e7a3c; font-weight: 700; text-decoration: underline; cursor: pointer; } .ds-undo:hover { color: #145c2e; }"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "button-secondary",
+      "description": "Three equal-width tabs; inactive Stone, active Walnut. role=tablist, aria-controls wired.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab ds-active\" role=\"tab\">השאלות</button><button class=\"ds-tab\" role=\"tab\">אנשים</button><button class=\"ds-tab\" role=\"tab\">מלאי</button></div>",
+      "css": ".ds-tabs { display: flex; gap: 8px; margin-bottom: 16px; } .ds-tab { flex: 1; font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; font-size: 0.95rem; border: none; border-radius: 10px; padding: 10px 18px; min-height: 44px; cursor: pointer; background: #eee9e0; color: #2d2a26; } .ds-tab:not(.ds-active):hover { background: #e3dac9; } .ds-tab.ds-active { background: #6d5c44; color: #fff; } .ds-tab:focus-visible { outline: 2px solid #6d5c44; outline-offset: 2px; }"
+    },
+    {
+      "name": "Quantity Stepper",
+      "kind": "input",
+      "refersTo": "button-secondary",
+      "description": "−/+ Stone buttons flanking a centered count — replaces typed number input for phone use.",
+      "html": "<div class=\"ds-qty\"><button class=\"ds-qty-btn\">−</button><span class=\"ds-qty-val\">2</span><button class=\"ds-qty-btn\">+</button></div>",
+      "css": ".ds-qty { display: flex; align-items: center; gap: 6px; } .ds-qty-btn { width: 44px; height: 44px; padding: 0; border: none; border-radius: 10px; background: #eee9e0; color: #2d2a26; font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; font-size: 1.2rem; font-weight: 600; line-height: 1; cursor: pointer; } .ds-qty-btn:hover:not(:disabled) { background: #e3dac9; } .ds-qty-btn:focus-visible { outline: 2px solid #6d5c44; outline-offset: 2px; } .ds-qty-val { min-width: 28px; text-align: center; font-weight: 600; font-size: 1.05rem; font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; color: #2d2a26; }"
+    },
+    {
+      "name": "Calendar Day Cell",
+      "kind": "custom",
+      "refersTo": "cal-cell",
+      "description": "Real button, 64px tall: civil number, Hebrew date, one chip. Shabbat/chag get washes; today gets a 2px Walnut ring.",
+      "html": "<div class=\"ds-cal\"><button class=\"ds-cell\"><span class=\"ds-num\">26</span><span class=\"ds-hday\">ד׳ בתשרי</span><span class=\"ds-chip ds-chip-ok\">2 להחזרה</span></button><button class=\"ds-cell ds-shabbat\"><span class=\"ds-num\">27</span><span class=\"ds-hday\">ה׳ בתשרי</span><span class=\"ds-chip ds-chip-shabbat\">שבת</span></button><button class=\"ds-cell ds-today\"><span class=\"ds-num\">28</span><span class=\"ds-hday\">ו׳ בתשרי</span></button></div>",
+      "css": ".ds-cal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 320px; font-family: \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; } .ds-cell { display: block; width: 100%; min-height: 64px; background: #fff; color: #2d2a26; border: 1px solid #e6e0d6; border-radius: 8px; padding: 4px; font-size: 0.8rem; text-align: start; cursor: pointer; } .ds-cell:hover:not(:disabled) { border-color: #c9bfa8; } .ds-cell:focus-visible { outline: 2px solid #6d5c44; outline-offset: 2px; } .ds-cell.ds-today { border-color: #6d5c44; border-width: 2px; } .ds-cell.ds-shabbat { background: #efe7d8; } .ds-num { display: block; font-weight: 600; font-size: 0.8rem; } .ds-hday { display: block; font-size: 0.72rem; color: #6f665a; white-space: nowrap; overflow: hidden; } .ds-chip { display: block; font-size: 0.72rem; border-radius: 4px; padding: 1px 4px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-chip-ok { background: #e6f4ea; color: #1e7a3c; } .ds-chip-shabbat { background: #e4dbcb; color: #5c544a; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Shabbat Table",
+    "overview": "The cloths this app tracks exist for one moment: a table set for Shabbat, a simcha, a family meal. The design borrows that warmth — parchment background, walnut brown, the colors of folded linen — but stays quiet about it. This is a working tool used one-handed on a phone, often mid-conversation at the door. Warmth lives in the palette; the structure stays out of the way.\n\nEverything is soft and thumb-friendly: 44px touch targets, gently rounded cards, generous padding, one column. The visual hierarchy serves a single job — who has what, and is it late — so the only loud elements are the status colors: red for overdue, green for returned, amber for caution.\n\nThe app speaks Hebrew, runs RTL, and treats the Jewish calendar as data, not decoration — Shabbat and chagim are visibly shaded, Hebrew dates appear next to civil ones, and due-date picks warn when they land on a holy day.",
+    "keyCharacteristics": [
+      "Warm parchment field, white paper cards, walnut actions",
+      "Status color carries all urgency; chrome stays calm",
+      "One narrow column (720px max), phone-first, RTL throughout",
+      "Dual dates everywhere: civil + Hebrew",
+      "Tactile minimums: 44px targets, 10–12px radii, visible focus"
+    ],
+    "rules": [
+      { "name": "The Status-Only-Color Rule", "body": "Red, green, and amber appear only where they carry meaning — overdue, returned, caution. Never use them decoratively; a red heading that isn't about lateness breaks the app's one signal.", "section": "colors" },
+      { "name": "The Dual-Date Rule", "body": "Anywhere a civil date appears, the Hebrew date appears with it — same line or directly beneath, in Muted Warm. Never show 23.9 alone when the app knows it's א׳ בתשרי.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Depth comes from the background/surface contrast and 1px borders — reserve shadows for the card lift; never add drop shadows to buttons, badges, or chips.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every touch target ≥44px (the .btn-sm per-item exception aside — it stays inline, never primary).",
+      "Do pair every civil date with its Hebrew date in Muted Warm.",
+      "Do keep Muted Warm (#6f665a) as the darkest allowed muted text — it passes 4.5:1 on both Parchment and Card Paper.",
+      "Do shade Shabbat and chagim on any date-related surface; a due date on a holy day should always get a Warn hint.",
+      "Do put undo inside the confirmation notice, not in a separate dialog.",
+      "Do keep the interface Hebrew and RTL end-to-end, including error strings."
+    ],
+    "donts": [
+      "Don't use Late Red, OK Green, or Warn Amber decoratively — status colors mean status.",
+      "Don't add shadows beyond the card lift; depth is tonal layering.",
+      "Don't introduce a second accent or a display typeface; Walnut and Segoe UI are the whole voice.",
+      "Don't shrink calendar in-cell text below 0.72rem or muted text below #6f665a — both floors were hit and fixed once already.",
+      "Don't put a destructive action at primary weight; danger stays a ghost.",
+      "Don't put bare confirm()-style friction on reversible actions while irreversible deletes share the same affordance — friction follows reversibility."
+    ]
+  }
+}
