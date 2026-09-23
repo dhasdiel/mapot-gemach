@@ -30,10 +30,19 @@ function tool(name, description, fnName, isMutation, inputSchema) {
 
 const id = (table) => z.string().describe(`Convex ${table} document id`);
 
-tool("list_people", "List all registered people (name, phone)", "listPeople", false, {});
-tool("add_person", "Add a person", "addPerson", true, { name: z.string(), phone: z.string() });
-tool("update_person", "Update a person's name/phone", "updatePerson", true, {
-  id: id("people"), name: z.string(), phone: z.string(),
+tool("list_people", "List all registered people (name, phone, visitor flag, notes)", "listPeople", false, {});
+tool("add_person", "Add a person; set visitor=true if they came to look but aren't borrowing yet", "addPerson", true, {
+  name: z.string(),
+  phone: z.string(),
+  visitor: z.boolean().optional(),
+  notes: z.string().optional(),
+});
+tool("update_person", "Update a person's name/phone/visitor flag/notes", "updatePerson", true, {
+  id: id("people"),
+  name: z.string(),
+  phone: z.string(),
+  visitor: z.boolean().optional(),
+  notes: z.string().optional(),
 });
 tool("remove_person", "Delete a person", "removePerson", true, { id: id("people") });
 
@@ -48,8 +57,9 @@ tool("remove_item", "Delete an item (fails if on loan)", "removeItem", true, { i
 
 tool("list_loans", "List all loans, newest first", "listLoans", false, {});
 tool("create_loan", "Create a loan for a borrower", "createLoan", true, {
-  borrowerName: z.string(),
-  phone: z.string(),
+  borrowerName: z.string().describe("required, but ignored when personId is provided (pass \"\")"),
+  phone: z.string().describe("required, but ignored when personId is provided (pass \"\")"),
+  personId: id("people").optional().describe("registered borrower — pulls name/phone from their record"),
   items: z.array(z.object({ itemId: id("items"), qty: z.number().int() })),
   dueAt: z.number().describe("due date as epoch ms"),
   notes: z.string().optional(),

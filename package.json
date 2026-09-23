@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "mcp": "node --env-file=.env.local mcp/server.mjs",
+    "mcp:check": "node mcp/smoke.mjs"
   },
   "dependencies": {
     "@hebcal/core": "^6.9.3",
