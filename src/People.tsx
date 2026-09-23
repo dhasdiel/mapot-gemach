@@ -4,9 +4,10 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
-import { MessageCircle, Phone } from "lucide-react";
+import { Download, MessageCircle, Phone } from "lucide-react";
 import { fmtDate } from "./Loans";
 import { waLink } from "./contact";
+import { downloadCsv } from "./csv";
 
 export default function People({ k }: { k: string }) {
   const people = useQuery(api.gemach.listPeople, { key: k });
@@ -121,9 +122,23 @@ export default function People({ k }: { k: string }) {
     <>
       <div className="row spread" style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>אנשים ({people.length})</h2>
-        <button onClick={() => { setShowForm(!showForm); setEditId(null); }}>
-          {showForm ? "ביטול" : "+ אדם חדש"}
-        </button>
+        <span className="row">
+          <button
+            className="secondary"
+            aria-label="ייצוא אנשים ל-CSV"
+            onClick={() =>
+              downloadCsv("mapot-people.csv", [
+                ["שם", "טלפון", "מבקר", "הערות"],
+                ...people.map((p) => [p.name, p.phone, p.visitor ? "כן" : "", p.notes ?? ""]),
+              ])
+            }
+          >
+            <Download size={15} />
+          </button>
+          <button onClick={() => { setShowForm(!showForm); setEditId(null); }}>
+            {showForm ? "ביטול" : "+ אדם חדש"}
+          </button>
+        </span>
       </div>
       {error && <div className="error" role="alert">{error}</div>}
 

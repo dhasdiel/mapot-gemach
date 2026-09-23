@@ -5,8 +5,9 @@ import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
 import { afterNextChag, dayHolidays, hebrewDateShort } from "./hebrew";
-import { CalendarPlus, Check, MessageCircle, Phone, RotateCcw, Trash2 } from "lucide-react";
+import { CalendarPlus, Check, Download, MessageCircle, Phone, RotateCcw, Trash2 } from "lucide-react";
 import { waLink } from "./contact";
+import { downloadCsv } from "./csv";
 
 const DAY = 86400000;
 
@@ -53,6 +54,10 @@ export default function Loans({ k }: { k: string }) {
   const dayStart = new Date().setHours(0, 0, 0, 0);
   const dueToday = active.filter((l) => l.dueAt >= dayStart && l.dueAt < dayStart + DAY).length;
   const dueWeek = active.filter((l) => l.dueAt >= dayStart + DAY && l.dueAt < dayStart + 7 * DAY).length;
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+  const monthLoans = loans.filter((l) => l.borrowedAt >= monthStart);
+  const monthItems = monthLoans.reduce((s, l) => s + l.items.reduce((a, i) => a + i.qty, 0), 0);
+  const monthFamilies = new Set(monthLoans.map((l) => l.borrowerName)).size;
 
   async function act(fn: () => Promise<unknown>, done?: (result: unknown) => string) {
     try {
@@ -92,17 +97,40 @@ export default function Loans({ k }: { k: string }) {
     <>
       <div className="row spread" style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>השאלות פעילות ({active.length})</h2>
-        <button onClick={() => setShowForm(!showForm)}>
-          {showForm ? "ביטול" : "+ השאלה חדשה"}
-        </button>
+        <span className="row">
+          <button
+            className="secondary"
+            aria-label="ייצוא השאלות ל-CSV"
+            onClick={() =>
+              downloadCsv("mapot-loans.csv", [
+                ["שואל/ת", "טלפון", "מפות", "הושאל", "החזרה", "הוחזר"],
+                ...loans.map((l) => [
+                  l.borrowerName,
+                  l.phone,
+                  l.items.map((i) => `${i.label} x${i.qty}`).join(" | "),
+                  fmtDate(l.borrowedAt),
+                  fmtDate(l.dueAt),
+                  l.returnedAt ? fmtDate(l.returnedAt) : "",
+                ]),
+              ])
+            }
+          >
+            <Download size={15} />
+          </button>
+          <button onClick={() => setShowForm(!showForm)}>
+            {showForm ? "ביטול" : "+ השאלה חדשה"}
+          </button>
+        </span>
       </div>
 
       {showForm && <NewLoan k={k} onDone={() => setShowForm(false)} />}
       {error && <div className="error" role="alert">{error}</div>}
 
-      {(dueToday > 0 || dueWeek > 0) && (
+      {(dueToday > 0 || dueWeek > 0 || monthLoans.length > 0) && (
         <div className="today-strip">
-          היום צפויות {dueToday} החזרות · בשבוע הקרוב {dueWeek}
+          {(dueToday > 0 || dueWeek > 0) &&
+            `היום צפויות ${dueToday} החזרות · בשבוע הקרוב ${dueWeek} — `}
+          החודש: {monthLoans.length} השאלות · {monthItems} מפות · {monthFamilies} משפחות
         </div>
       )}
       {notice && (
