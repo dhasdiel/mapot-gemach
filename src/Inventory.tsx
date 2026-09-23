@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { Camera } from "lucide-react";
+import { Camera, Image as ImageIcon } from "lucide-react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
@@ -175,11 +175,25 @@ function ItemForm({ k, item, onDone }: { k: string; item?: Item; onDone: () => v
         {preview && <img src={preview} alt="" className="item-photo" />}
         <label className="photo-pick">
           <Camera size={15} />
-          {preview ? "החלפת תמונה" : "הוספת תמונה"}
+          צילום
           <input
             type="file"
             accept="image/*"
-            hidden
+            capture="environment"
+            className="visually-hidden"
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null);
+              setRemovePhoto(false);
+            }}
+          />
+        </label>
+        <label className="photo-pick">
+          <ImageIcon size={15} />
+          מהגלריה
+          <input
+            type="file"
+            accept="image/*"
+            className="visually-hidden"
             onChange={(e) => {
               setFile(e.target.files?.[0] ?? null);
               setRemovePhoto(false);
