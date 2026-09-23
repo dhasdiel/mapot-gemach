@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
+import { MessageCircle, Phone } from "lucide-react";
 import { waLink } from "./contact";
 
 export default function People({ k }: { k: string }) {
@@ -42,9 +43,13 @@ export default function People({ k }: { k: string }) {
           <div className="contact-links">
             {person.phone && (
               <>
-                <a href={`tel:${person.phone}`}>{person.phone}</a>
+                <a href={`tel:${person.phone}`}>
+                  <Phone size={14} />
+                  {person.phone}
+                </a>
                 {waLink(person.phone) && (
                   <a href={waLink(person.phone)!} target="_blank" rel="noreferrer">
+                    <MessageCircle size={14} />
                     וואטסאפ
                   </a>
                 )}
