@@ -6,8 +6,10 @@ import Loans from "./Loans";
 import Inventory from "./Inventory";
 import Calendar from "./Calendar";
 import People from "./People";
+import Catalog from "./Catalog";
 
 const KEY_STORAGE = "gemach-key";
+const IS_CATALOG = new URLSearchParams(location.search).has("catalog");
 
 export default function App() {
   const convex = useConvex();
@@ -32,6 +34,8 @@ export default function App() {
         }
       });
   }, []);
+
+  if (IS_CATALOG) return <Catalog />;
 
   if (!authed) {
     return (

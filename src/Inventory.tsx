@@ -1,9 +1,10 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { Camera, Copy, Image as ImageIcon } from "lucide-react";
+import { Camera, Copy, Download, Image as ImageIcon } from "lucide-react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
+import { downloadCsv } from "./csv";
 import { errMsg } from "./err";
 
 type Item = Doc<"items"> & { available: number; photoUrl?: string | null };
@@ -11,7 +12,9 @@ type Item = Doc<"items"> & { available: number; photoUrl?: string | null };
 export default function Inventory({ k }: { k: string }) {
   const items = useQuery(api.gemach.listItems, { key: k });
   const loans = useQuery(api.gemach.listLoans, { key: k });
+  const waitlist = useQuery(api.gemach.listWaitlist, { key: k });
   const removeItem = useMutation(api.gemach.removeItem);
+  const leaveWaitlist = useMutation(api.gemach.leaveWaitlist);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<Id<"items"> | null>(null);
   const [copyFrom, setCopyFrom] = useState<Item | null>(null);
@@ -34,9 +37,23 @@ export default function Inventory({ k }: { k: string }) {
     <>
       <div className="row spread" style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>מלאי ({items.length})</h2>
-        <button onClick={() => { setShowForm(!showForm); setEditId(null); setCopyFrom(null); }}>
-          {showForm ? "ביטול" : "+ מפה חדשה"}
-        </button>
+        <span className="row">
+          <button
+            className="secondary"
+            aria-label="ייצוא מלאי ל-CSV"
+            onClick={() =>
+              downloadCsv("mapot-inventory.csv", [
+                ["שם", "מידה", "צבע", "כמות", "זמין"],
+                ...items.map((i) => [i.name, i.size, i.color, i.quantity, i.available]),
+              ])
+            }
+          >
+            <Download size={15} />
+          </button>
+          <button onClick={() => { setShowForm(!showForm); setEditId(null); setCopyFrom(null); }}>
+            {showForm ? "ביטול" : "+ מפה חדשה"}
+          </button>
+        </span>
       </div>
       {error && <div className="error" role="alert">{error}</div>}
 
@@ -66,6 +83,31 @@ export default function Inventory({ k }: { k: string }) {
             {(holders.get(item._id)?.length ?? 0) > 0 && (
               <div className="muted" style={{ marginTop: 6 }}>
                 כרגע אצל: {holders.get(item._id)!.join(" · ")}
+              </div>
+            )}
+            {(waitlist ?? []).filter((w) => w.itemId === item._id).length > 0 && (
+              <div className="hint" style={{ marginTop: 4 }}>
+                ממתינים:{" "}
+                {(waitlist ?? [])
+                  .filter((w) => w.itemId === item._id)
+                  .map((w, i, arr) => (
+                    <span key={w._id}>
+                      {w.name} (
+                      <a href={`tel:${w.phone}`} style={{ color: "inherit" }}>
+                        {w.phone}
+                      </a>
+                      )
+                      <button
+                        className="hint-action"
+                        aria-label={`הסרת ${w.name} מרשימת ההמתנה`}
+                        onClick={() => leaveWaitlist({ key: k, id: w._id })}
+                      >
+                        {" "}
+                        הסרה
+                      </button>
+                      {i < arr.length - 1 ? " · " : ""}
+                    </span>
+                  ))}
               </div>
             )}
             <div className="row" style={{ marginTop: 8, justifyContent: "flex-end" }}>

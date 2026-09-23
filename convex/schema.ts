@@ -33,4 +33,11 @@ export default defineSchema({
     returnedAt: v.optional(v.number()),
     notes: v.optional(v.string()),
   }).index("by_returned", ["returnedAt"]),
+  // visitors register interest in an out-of-stock cloth from the public catalog
+  waitlist: defineTable({
+    itemId: v.id("items"),
+    name: v.string(),
+    phone: v.string(),
+    createdAt: v.number(),
+  }).index("by_item", ["itemId"]),
 });

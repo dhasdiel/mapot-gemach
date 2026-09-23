@@ -238,6 +238,11 @@ export const removeItem = mutation({
     }
     const item = await ctx.db.get(args.id);
     if (item?.photoId) await ctx.storage.delete(item.photoId);
+    const waiters = await ctx.db
+      .query("waitlist")
+      .withIndex("by_item", (q) => q.eq("itemId", args.id))
+      .collect();
+    for (const w of waiters) await ctx.db.delete(w._id);
     await ctx.db.delete(args.id);
   },
 });
@@ -369,6 +374,69 @@ export const extendLoan = mutation({
     const dueAt = Math.max(loan.dueAt, Date.now()) + 7 * DAY;
     await ctx.db.patch(args.id, { dueAt });
     return dueAt;
+  },
+});
+
+// --- public catalog (no key): visitors see what's in stock, nothing else ---
+
+export const publicItems = query({
+  args: {},
+  handler: async (ctx) => {
+    const items = await availableMap(ctx);
+    return Promise.all(
+      items.map(async (i) => ({
+        _id: i._id,
+        name: i.name,
+        size: i.size,
+        color: i.color,
+        available: i.available,
+        photoUrl: i.photoId ? await ctx.storage.getUrl(i.photoId) : null,
+      }))
+    );
+  },
+});
+
+export const joinWaitlist = mutation({
+  args: { itemId: v.id("items"), name: v.string(), phone: v.string() },
+  handler: async (ctx, args) => {
+    const name = args.name.trim();
+    if (!name) throw new ConvexError("missing_name");
+    const phone = normPhone(args.phone);
+    if (!phone) throw new ConvexError("invalid_phone");
+    const item = await ctx.db.get(args.itemId);
+    if (!item) throw new ConvexError("item_not_found");
+    const existing = await ctx.db
+      .query("waitlist")
+      .withIndex("by_item", (q) => q.eq("itemId", args.itemId))
+      .collect();
+    if (existing.some((w) => phoneDigits(w.phone) === phone)) {
+      throw new ConvexError("already_waiting");
+    }
+    return ctx.db.insert("waitlist", {
+      itemId: args.itemId,
+      name,
+      phone: args.phone.trim(),
+      createdAt: Date.now(),
+    });
+  },
+});
+
+export const listWaitlist = query({
+  args: { key: v.string() },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    const rows = await ctx.db.query("waitlist").collect();
+    return rows
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .map((w) => ({ _id: w._id, itemId: w.itemId, name: w.name, phone: w.phone }));
+  },
+});
+
+export const leaveWaitlist = mutation({
+  args: { key: v.string(), id: v.id("waitlist") },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    await ctx.db.delete(args.id);
   },
 });
 

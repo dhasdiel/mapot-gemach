@@ -16,6 +16,7 @@ const ERRORS: Record<string, string | ((detail: string) => string)> = {
   invalid_quantity: "כמות לא תקינה",
   item_not_found: "המפה לא נמצאה",
   upload_failed: "העלאת התמונה נכשלה",
+  already_waiting: "כבר רשומים ברשימת ההמתנה למפה הזו",
 };
 
 export function errMsg(e: unknown): string {
