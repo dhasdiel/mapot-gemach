@@ -35,7 +35,7 @@ async function availableMap(ctx: { db: any }) {
   const used = new Map<string, number>();
   for (const loan of loans as Doc<"loans">[]) {
     for (const li of loan.items) {
-      used.set(li.itemId, (used.get(li.itemId) ?? 0) + li.qty);
+      used.set(li.itemId, (used.get(li.itemId) ?? 0) + li.qty - (li.returnedQty ?? 0));
     }
   }
   return (items as Doc<"items">[]).map((item) => ({
@@ -176,7 +176,7 @@ export const updateItem = mutation({
     const outOnLoan = active
       .flatMap((l) => l.items)
       .filter((li) => li.itemId === args.id)
-      .reduce((s, li) => s + li.qty, 0);
+      .reduce((s, li) => s + li.qty - (li.returnedQty ?? 0), 0);
     if (args.quantity < outOnLoan) {
       throw new ConvexError("quantity_below_loaned");
     }
@@ -201,7 +201,7 @@ export const removeItem = mutation({
       .filter((l) => l.items.some((li) => li.itemId === args.id))
       .map((l) => l.borrowerName);
     if (holders.length > 0) {
-      throw new ConvexError(`item_on_loan:${[...new Set(holders)].join("، ")}`);
+      throw new ConvexError(`item_on_loan:${[...new Set(holders)].join(", ")}`);
     }
     await ctx.db.delete(args.id);
   },
@@ -277,7 +277,34 @@ export const returnLoan = mutation({
   args: { key: v.string(), id: v.id("loans") },
   handler: async (ctx, args) => {
     checkKey(args.key);
-    await ctx.db.patch(args.id, { returnedAt: Date.now() });
+    const loan = await ctx.db.get(args.id);
+    if (!loan) throw new ConvexError("loan_not_found");
+    await ctx.db.patch(args.id, {
+      returnedAt: Date.now(),
+      items: loan.items.map((li) => ({ ...li, returnedQty: li.qty })),
+    });
+  },
+});
+
+// partial return: one unit of one item back at the door; the loan closes
+// itself when every line is fully returned
+export const returnItemUnit = mutation({
+  args: { key: v.string(), id: v.id("loans"), itemId: v.id("items") },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    const loan = await ctx.db.get(args.id);
+    if (!loan) throw new ConvexError("loan_not_found");
+    if (loan.returnedAt !== undefined) throw new ConvexError("already_returned");
+    const items = loan.items.map((li) =>
+      li.itemId === args.itemId
+        ? { ...li, returnedQty: Math.min(li.qty, (li.returnedQty ?? 0) + 1) }
+        : li
+    );
+    const allBack = items.every((li) => (li.returnedQty ?? 0) >= li.qty);
+    await ctx.db.patch(args.id, {
+      items,
+      ...(allBack ? { returnedAt: Date.now() } : {}),
+    });
   },
 });
 
@@ -288,11 +315,15 @@ export const unreturnLoan = mutation({
     checkKey(args.key);
     const loan = await ctx.db.get(args.id);
     if (!loan || loan.returnedAt === undefined) throw new ConvexError("not_returned");
-    await ctx.db.patch(args.id, { returnedAt: undefined });
+    await ctx.db.patch(args.id, {
+      returnedAt: undefined,
+      items: loan.items.map((li) => ({ ...li, returnedQty: 0 })),
+    });
   },
 });
 
-// the common hallway request: "שבוע נוסף"
+// the common hallway request: "שבוע נוסף". Extends from today when the
+// loan is already overdue — +7d off a stale date would stay overdue.
 export const extendLoan = mutation({
   args: { key: v.string(), id: v.id("loans") },
   handler: async (ctx, args) => {
@@ -300,7 +331,9 @@ export const extendLoan = mutation({
     const loan = await ctx.db.get(args.id);
     if (!loan) throw new ConvexError("loan_not_found");
     if (loan.returnedAt !== undefined) throw new ConvexError("already_returned");
-    await ctx.db.patch(args.id, { dueAt: loan.dueAt + 7 * DAY });
+    const dueAt = Math.max(loan.dueAt, Date.now()) + 7 * DAY;
+    await ctx.db.patch(args.id, { dueAt });
+    return dueAt;
   },
 });
 

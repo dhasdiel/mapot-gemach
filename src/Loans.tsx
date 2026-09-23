@@ -29,16 +29,17 @@ function reminderText(loan: Doc<"loans">) {
 export default function Loans({ k }: { k: string }) {
   const loans = useQuery(api.gemach.listLoans, { key: k });
   const returnLoan = useMutation(api.gemach.returnLoan);
+  const returnItemUnit = useMutation(api.gemach.returnItemUnit);
   const unreturnLoan = useMutation(api.gemach.unreturnLoan);
   const extendLoan = useMutation(api.gemach.extendLoan);
   const removeLoan = useMutation(api.gemach.removeLoan);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<{ text: string; undo?: () => void } | null>(null);
 
   useEffect(() => {
     if (!notice) return;
-    const t = setTimeout(() => setNotice(""), 4000);
+    const t = setTimeout(() => setNotice(null), 5000);
     return () => clearTimeout(t);
   }, [notice]);
 
@@ -49,22 +50,34 @@ export default function Loans({ k }: { k: string }) {
   const overdue = active.filter((l) => l.dueAt < Date.now());
   const upcoming = active.filter((l) => l.dueAt >= Date.now());
 
-  async function act(fn: () => Promise<unknown>, done?: string) {
+  async function act(fn: () => Promise<unknown>, done?: (result: unknown) => string) {
     try {
       setError("");
-      await fn();
-      if (done) setNotice(done);
+      const result = await fn();
+      return result !== undefined && done ? done(result) : undefined;
     } catch (e) {
       setError(errMsg(e));
+      return undefined;
     }
   }
 
   const cardProps = (loan: Doc<"loans">) => ({
-    onReturn: () =>
-      act(() => returnLoan({ key: k, id: loan._id }), `✓ חזר למלאי — ${loan.borrowerName}`),
-    onExtend: () => act(() => extendLoan({ key: k, id: loan._id })),
+    onReturn: async () => {
+      await act(() => returnLoan({ key: k, id: loan._id }));
+      setNotice({
+        text: `✓ חזר למלאי — ${loan.borrowerName}`,
+        undo: () => act(() => unreturnLoan({ key: k, id: loan._id })),
+      });
+    },
+    onReturnItem: (itemId: Id<"items">) =>
+      act(() => returnItemUnit({ key: k, id: loan._id, itemId })),
+    onExtend: async () => {
+      const next = await act(() => extendLoan({ key: k, id: loan._id }), (r) => String(r));
+      if (next) setNotice({ text: `✓ הוארך עד ${fmtDate(Number(next))} (${hebrewDateShort(Number(next))})` });
+    },
     onDelete: () => {
-      if (confirm("למחוק את ההשאלה?")) act(() => removeLoan({ key: k, id: loan._id }));
+      if (confirm(`למחוק את ההשאלה של ${loan.borrowerName}?`))
+        act(() => removeLoan({ key: k, id: loan._id }));
     },
   });
 
@@ -78,8 +91,17 @@ export default function Loans({ k }: { k: string }) {
       </div>
 
       {showForm && <NewLoan k={k} onDone={() => setShowForm(false)} />}
-      {error && <div className="error">{error}</div>}
-      {notice && <div className="notice" role="status">{notice}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
+      {notice && (
+        <div className="notice" role="status">
+          {notice.text}
+          {notice.undo && (
+            <button className="notice-undo" onClick={notice.undo}>
+              בטל
+            </button>
+          )}
+        </div>
+      )}
 
       {overdue.length > 0 && (
         <>
@@ -118,12 +140,14 @@ export default function Loans({ k }: { k: string }) {
 export function LoanCard({
   loan,
   onReturn,
+  onReturnItem,
   onExtend,
   onUnreturn,
   onDelete,
 }: {
   loan: Doc<"loans">;
   onReturn?: () => void;
+  onReturnItem?: (itemId: Id<"items">) => void;
   onExtend?: () => void;
   onUnreturn?: () => void;
   onDelete: () => void;
@@ -140,8 +164,28 @@ export function LoanCard({
           <span className="muted">הוחזר {fmtDate(loan.returnedAt)}</span>
         )}
       </div>
-      <div className="muted" style={{ marginTop: 4 }}>
-        {loan.items.map((i) => `${i.label} ×${i.qty}`).join(" · ")}
+      <div style={{ marginTop: 4 }}>
+        {loan.items.map((i) => {
+          const back = i.returnedQty ?? 0;
+          const remaining = i.qty - back;
+          return (
+            <div key={i.itemId} className="row spread item-line">
+              <span className="muted">
+                {i.label} ×{i.qty}
+                {back > 0 && ` — חזרו ${back}`}
+              </span>
+              {onReturnItem && remaining > 0 && (
+                <button
+                  className="btn-sm secondary"
+                  onClick={() => onReturnItem(i.itemId)}
+                  aria-label={`החזרת יחידה של ${i.label} מהשאלת ${loan.borrowerName}`}
+                >
+                  החזרה
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="row spread" style={{ marginTop: 8 }}>
         <div className="contact-links">
@@ -325,14 +369,29 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
           {due && (
             <div className={"hint" + (isShabbat || dueHolidays.length > 0 ? " warn" : "")}>
               {hebrewDateShort(dueDate.getTime())}
-              {isShabbat && " · יום שבת — להחזרה אחרי שבת?"}
               {dueHolidays.map((h) => ` · ${h}`)}
+              {isShabbat && (
+                <>
+                  {" · יום שבת — "}
+                  <button
+                    type="button"
+                    className="hint-action"
+                    onClick={() => {
+                      const sun = new Date(dueDate);
+                      sun.setDate(sun.getDate() + 1);
+                      setDue(sun.toISOString().slice(0, 10));
+                    }}
+                  >
+                    הזיזי ליום א׳
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      <label>מפות</label>
+      <div className="form-label">מפות</div>
       {items.length === 0 && <div className="muted">אין מפות במלאי — הוסיפי קודם בלשונית מלאי</div>}
       {items.map((item) => {
         const q = Math.min(qty[item._id] ?? 0, item.available);
@@ -374,7 +433,7 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
       <label htmlFor="notes">הערות</label>
       <input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
 
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
       <div style={{ marginTop: 12 }}>
         <button type="submit" disabled={busy}>
           שמירה

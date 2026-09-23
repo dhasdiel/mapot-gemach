@@ -81,7 +81,7 @@ export default function People({ k }: { k: string }) {
           {showForm ? "ביטול" : "+ אדם חדש"}
         </button>
       </div>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
 
       {showForm && <PersonForm k={k} onDone={() => setShowForm(false)} />}
       {people.length === 0 && !showForm && (
@@ -131,12 +131,12 @@ function PersonForm({ k, person, onDone }: { k: string; person?: Doc<"people">; 
     <form className="card" onSubmit={submit}>
       <div className="row" style={{ gap: 12 }}>
         <div style={{ flex: 1, minWidth: 140 }}>
-          <label>שם</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
+          <label htmlFor="pname">שם</label>
+          <input id="pname" value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
         </div>
         <div style={{ flex: 1, minWidth: 140 }}>
-          <label>טלפון</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
+          <label htmlFor="pphone">טלפון</label>
+          <input id="pphone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
         </div>
       </div>
       <label className="row" style={{ marginTop: 10, cursor: "pointer", fontSize: "0.95rem" }}>
@@ -148,9 +148,9 @@ function PersonForm({ k, person, onDone }: { k: string; person?: Doc<"people">; 
         />
         בא/ה לראות — ייקח/תיקח בפעם הבאה
       </label>
-      <label>הערות</label>
-      <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="למשל: התעניינה במפה לבנה גדולה" />
-      {error && <div className="error">{error}</div>}
+      <label htmlFor="pnotes">הערות</label>
+      <input id="pnotes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="למשל: התעניינה במפה לבנה גדולה" />
+      {error && <div className="error" role="alert">{error}</div>}
       <div style={{ marginTop: 12 }}>
         <button type="submit" disabled={busy}>שמירה</button>
       </div>

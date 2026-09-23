@@ -13,23 +13,30 @@ export default function App() {
   const convex = useConvex();
   const [key, setKey] = useState(() => localStorage.getItem(KEY_STORAGE) ?? "");
   const [authed, setAuthed] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [tab, setTab] = useState<"loans" | "calendar" | "people" | "inventory">("loans");
 
-  // validate a stored key once on load
+  // validate a stored key once on load — a wrong password clears it, but a
+  // network failure keeps it and just reports the connectivity problem
   useEffect(() => {
     if (!key) return;
     convex
       .query(api.gemach.ping, { key })
       .then(() => setAuthed(true))
-      .catch(() => {
-        localStorage.removeItem(KEY_STORAGE);
-        setKey("");
+      .catch((e) => {
+        if (e instanceof Error && e.message.includes("unauthorized")) {
+          localStorage.removeItem(KEY_STORAGE);
+          setKey("");
+        } else {
+          setAuthError("אין חיבור — בדקי אינטרנט ונסי שוב");
+        }
       });
   }, []);
 
   if (!authed) {
     return (
       <Login
+        initialError={authError}
         onSubmit={async (password) => {
           await convex.query(api.gemach.ping, { key: password });
           localStorage.setItem(KEY_STORAGE, password);
@@ -57,22 +64,30 @@ export default function App() {
           מלאי
         </button>
       </div>
-      {tab === "loans" ? (
-        <Loans k={key} />
-      ) : tab === "calendar" ? (
-        <Calendar k={key} />
-      ) : tab === "people" ? (
-        <People k={key} />
-      ) : (
-        <Inventory k={key} />
-      )}
+      <div role="tabpanel" id={`panel-${tab}`} aria-label={tab}>
+        {tab === "loans" ? (
+          <Loans k={key} />
+        ) : tab === "calendar" ? (
+          <Calendar k={key} />
+        ) : tab === "people" ? (
+          <People k={key} />
+        ) : (
+          <Inventory k={key} />
+        )}
+      </div>
     </>
   );
 }
 
-function Login({ onSubmit }: { onSubmit: (password: string) => Promise<void> }) {
+function Login({
+  onSubmit,
+  initialError = "",
+}: {
+  onSubmit: (password: string) => Promise<void>;
+  initialError?: string;
+}) {
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: FormEvent) {
@@ -81,8 +96,12 @@ function Login({ onSubmit }: { onSubmit: (password: string) => Promise<void> }) 
     setError("");
     try {
       await onSubmit(password);
-    } catch {
-      setError("סיסמה שגויה");
+    } catch (e) {
+      setError(
+        e instanceof Error && e.message.includes("unauthorized")
+          ? "סיסמה שגויה"
+          : "אין חיבור — בדקי אינטרנט ונסי שוב"
+      );
     } finally {
       setBusy(false);
     }
@@ -104,7 +123,7 @@ function Login({ onSubmit }: { onSubmit: (password: string) => Promise<void> }) 
           כניסה
         </button>
       </div>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
     </form>
   );
 }

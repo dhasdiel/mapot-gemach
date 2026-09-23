@@ -81,12 +81,25 @@ h2 {
 }
 
 .notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   background: #e6f4ea;
   color: #1e7a3c;
   border-radius: 10px;
   padding: 10px 14px;
   margin-bottom: 10px;
   font-weight: 600;
+}
+
+.notice-undo {
+  min-height: 0;
+  padding: 4px 10px;
+  background: transparent;
+  color: #1e7a3c;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .badge {
@@ -140,6 +153,26 @@ button:disabled {
   cursor: default;
 }
 
+button.btn-sm {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.item-line {
+  padding: 2px 0;
+}
+
+.hint-action {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  color: #7c4a00;
+  font-size: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 input,
 select {
   font-family: inherit;
@@ -161,7 +194,8 @@ input[type="checkbox"] {
   min-height: 0;
 }
 
-label {
+label,
+.form-label {
   display: block;
   font-size: 0.85rem;
   color: #5c544a;
@@ -305,6 +339,11 @@ label {
 .cal-chip.holiday {
   background: #f4ead5;
   color: #6d4a00;
+}
+
+.cal-chip.shabbat {
+  background: #e4dbcb;
+  color: #5c544a;
 }
 
 .login {

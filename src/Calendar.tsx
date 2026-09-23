@@ -17,6 +17,7 @@ const DOW = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
 export default function Calendar({ k }: { k: string }) {
   const loans = useQuery(api.gemach.listLoans, { key: k });
   const returnLoan = useMutation(api.gemach.returnLoan);
+  const returnItemUnit = useMutation(api.gemach.returnItemUnit);
   const extendLoan = useMutation(api.gemach.extendLoan);
   const removeLoan = useMutation(api.gemach.removeLoan);
   const [month, setMonth] = useState(() => {
@@ -76,9 +77,9 @@ export default function Calendar({ k }: { k: string }) {
         </button>
       </div>
 
-      <div className="cal-grid" role="grid" aria-label={monthLabel}>
+      <div className="cal-grid" aria-label={monthLabel}>
         {DOW.map((d) => (
-          <div key={d} className="cal-dow" role="columnheader">{d}</div>
+          <div key={d} className="cal-dow">{d}</div>
         ))}
         {cells.map((date, i) => {
           if (!date) return <div key={i} role="presentation" />;
@@ -109,6 +110,7 @@ export default function Calendar({ k }: { k: string }) {
                 <span className="cal-num">{date.getDate()}</span>
                 <span className="cal-hday">{hebrewDayLabel(date)}</span>
               </div>
+              {isShabbat && <span className="cal-chip shabbat">שבת</span>}
               {dayHolidays.map((h) => (
                 <span key={h} className="cal-chip holiday">{h}</span>
               ))}
@@ -121,7 +123,7 @@ export default function Calendar({ k }: { k: string }) {
           );
         })}
       </div>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
 
       {selected && (
         <>
@@ -141,9 +143,11 @@ export default function Calendar({ k }: { k: string }) {
               key={loan._id}
               loan={loan}
               onReturn={() => act(() => returnLoan({ key: k, id: loan._id }))}
+              onReturnItem={(itemId) => act(() => returnItemUnit({ key: k, id: loan._id, itemId }))}
               onExtend={() => act(() => extendLoan({ key: k, id: loan._id }))}
               onDelete={() => {
-                if (confirm("למחוק את ההשאלה?")) act(() => removeLoan({ key: k, id: loan._id }));
+                if (confirm(`למחוק את ההשאלה של ${loan.borrowerName}?`))
+                  act(() => removeLoan({ key: k, id: loan._id }));
               }}
             />
           ))}

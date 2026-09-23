@@ -36,7 +36,7 @@ export default function Inventory({ k }: { k: string }) {
           {showForm ? "ביטול" : "+ מפה חדשה"}
         </button>
       </div>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
 
       {showForm && <ItemForm k={k} onDone={() => setShowForm(false)} />}
       {items.length === 0 && !showForm && <div className="empty">המלאי ריק</div>}
@@ -120,20 +120,21 @@ function ItemForm({ k, item, onDone }: { k: string; item?: Item; onDone: () => v
     <form className="card" onSubmit={submit}>
       <div className="row" style={{ gap: 12 }}>
         <div style={{ flex: 2, minWidth: 120 }}>
-          <label>שם / תיאור</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="למשל: מפת שבת" />
+          <label htmlFor="iname">שם / תיאור</label>
+          <input id="iname" value={name} onChange={(e) => setName(e.target.value)} placeholder="למשל: מפת שבת" />
         </div>
         <div style={{ flex: 1, minWidth: 100 }}>
-          <label>מידה</label>
-          <input value={size} onChange={(e) => setSize(e.target.value)} placeholder="גדולה" required />
+          <label htmlFor="isize">מידה</label>
+          <input id="isize" value={size} onChange={(e) => setSize(e.target.value)} placeholder="גדולה" required />
         </div>
         <div style={{ flex: 1, minWidth: 100 }}>
-          <label>צבע</label>
-          <input value={color} onChange={(e) => setColor(e.target.value)} placeholder="לבן" required />
+          <label htmlFor="icolor">צבע</label>
+          <input id="icolor" value={color} onChange={(e) => setColor(e.target.value)} placeholder="לבן" required />
         </div>
         <div>
-          <label>כמות</label>
+          <label htmlFor="iqty">כמות</label>
           <input
+            id="iqty"
             type="number"
             min={1}
             value={quantity}
@@ -142,7 +143,7 @@ function ItemForm({ k, item, onDone }: { k: string; item?: Item; onDone: () => v
           />
         </div>
       </div>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
       <div style={{ marginTop: 12 }}>
         <button type="submit" disabled={busy}>
           שמירה

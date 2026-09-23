@@ -32,9 +32,13 @@ export function hebrewDayLabel(date: Date): string {
   return hd.renderGematriya(true).split(" ")[0];
 }
 
-/** e.g. "כ״ה אלול" */
+/** e.g. "כ״ה אלול" — Intl form keeps two-word months (אדר ב׳) intact */
+const dayMonthFmt = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
+  day: "numeric",
+  month: "long",
+});
 export function hebrewDateShort(ts: number): string {
-  return new HDate(new Date(ts)).renderGematriya(true).split(" ").slice(0, 2).join(" ");
+  return dayMonthFmt.format(new Date(ts));
 }
 
 /** e.g. "תשרי תשפ״ו" — pairs with the Gregorian month label */

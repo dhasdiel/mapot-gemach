@@ -24,6 +24,7 @@ export default defineSchema({
         itemId: v.id("items"),
         label: v.string(), // snapshot so history survives item deletion
         qty: v.number(),
+        returnedQty: v.optional(v.number()), // partial returns at the door
       })
     ),
     borrowedAt: v.number(),
