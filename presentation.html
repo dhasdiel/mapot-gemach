@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>גמ״ח מפות — מצגת</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background: #f6f3ee;
+    color: #2d2a26;
+    overflow: hidden;
+    height: 100vh;
+  }
+  .slide {
+    display: none;
+    height: 100vh;
+    padding: 8vh 8vw;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .slide.active { display: flex; }
+  h1 { font-size: clamp(2.2rem, 6vw, 4rem); color: #6d5c44; margin-bottom: 0.4em; }
+  h2 { font-size: clamp(1.6rem, 4.5vw, 2.8rem); color: #6d5c44; margin-bottom: 0.6em; }
+  p, li { font-size: clamp(1.05rem, 2.4vw, 1.5rem); line-height: 1.7; color: #453f38; }
+  ul { list-style: none; }
+  li { margin: 0.5em 0; }
+  li::before { content: "• "; color: #6d5c44; font-weight: 700; }
+  .sub { color: #6f665a; font-size: clamp(0.95rem, 2vw, 1.2rem); }
+  .big { font-size: clamp(1.4rem, 3.4vw, 2.2rem); font-weight: 600; }
+  .card {
+    background: #fff;
+    border: 1px solid #e6e0d6;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(80,66,45,.08);
+    padding: 1.2em 1.6em;
+    margin: 0.4em;
+    max-width: 560px;
+  }
+  .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5em; max-width: 900px; }
+  .badge {
+    display: inline-block; padding: 0.2em 0.9em; border-radius: 999px;
+    font-weight: 600; font-size: clamp(0.9rem, 2vw, 1.15rem); margin: 0.2em;
+  }
+  .b-late { background: #fbe4e2; color: #b3261e; }
+  .b-ok { background: #e6f4ea; color: #1e7a3c; }
+  .b-warn { background: #fdf0e0; color: #7c4a00; }
+  .emoji { font-size: clamp(2.4rem, 6vw, 4rem); margin-bottom: 0.3em; }
+  a { color: #6d5c44; font-weight: 700; }
+  .nav {
+    position: fixed; bottom: 20px; inset-inline: 0;
+    display: flex; justify-content: center; gap: 10px; align-items: center;
+  }
+  .nav button {
+    font-family: inherit; font-size: 1rem; border: none; border-radius: 10px;
+    padding: 10px 22px; min-height: 44px; cursor: pointer;
+    background: #eee9e0; color: #2d2a26;
+  }
+  .nav button:hover { background: #e3dac9; }
+  .nav .counter { color: #6f665a; font-size: 0.9rem; min-width: 3em; text-align: center; }
+  .dots { position: fixed; top: 16px; inset-inline: 0; display: flex; justify-content: center; gap: 6px; }
+  .dots span { width: 8px; height: 8px; border-radius: 50%; background: #d8d0c4; }
+  .dots span.on { background: #6d5c44; }
+</style>
+</head>
+<body>
+
+<div class="dots" id="dots"></div>
+
+<section class="slide">
+  <div class="emoji">🕊️</div>
+  <h1>גמ״ח מפות</h1>
+  <p class="big">מערכת ניהול להשאלת מפות — בחינם, מהלב</p>
+  <p class="sub" style="margin-top:1em">אפליקציה לנייד ולמחשב · בעברית · מימין לשמאל</p>
+</section>
+
+<section class="slide">
+  <h2>הבעיה</h2>
+  <ul style="text-align:start; max-width:600px">
+    <li>מי לקח איזו מפה? קל לשכוח</li>
+    <li>מתי צריך להחזיר? רדיפה ידנית</li>
+    <li>אנשים באים להסתכל וחוזרים אחר כך — אין רישום</li>
+    <li>פתקים וזיכרון לא עובדים כשיש הרבה השאלות</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>הפתרון — אפליקציה אחת פשוטה</h2>
+  <div class="row">
+    <div class="card"><div class="emoji">📋</div><p><strong>השאלות</strong><br>מי לקח, מה לקח, מתי מחזיר</p></div>
+    <div class="card"><div class="emoji">👥</div><p><strong>אנשים</strong><br>כולל מי שבא רק להסתכל</p></div>
+    <div class="card"><div class="emoji">🧺</div><p><strong>מלאי</strong><br>כל המפות, כולל תמונות</p></div>
+    <div class="card"><div class="emoji">🗓️</div><p><strong>לוח שנה</strong><br>עברי + חגים + שבתות</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>רישום השאלה — בשניות</h2>
+  <ul style="text-align:start; max-width:640px">
+    <li>בוחרים אדם מהרשימה (או רושמים חדש)</li>
+    <li>מסמנים מפות בכפתורי <strong>− / +</strong> — בלי הקלדה</li>
+    <li>תאריך החזרה — ברירת מחדל שבוע</li>
+    <li>אם התאריך נופל על שבת או חג — המערכת מזהירה ומציעה לדחות</li>
+  </ul>
+  <div class="card" style="margin-top:1em">
+    <span class="badge b-warn">יום שבת — הזיזי ליום א׳</span>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>מעקב החזרות</h2>
+  <div class="row">
+    <span class="badge b-late">באיחור 3 ימים</span>
+    <span class="badge b-warn">להחזרה היום</span>
+    <span class="badge b-ok">נותרו 5 ימים</span>
+  </div>
+  <ul style="text-align:start; max-width:640px; margin-top:1em">
+    <li>השאלות באיחור <strong>קופצות לראש הרשימה</strong> באדום</li>
+    <li>כפתור <strong>+שבוע</strong> — הארכה בלחיצה אחת</li>
+    <li>החזרה חלקית — כל מפה בנפרד, ההשאלה נסגרת לבד</li>
+    <li>טעית? <strong>בטל</strong> בתוך ההתראה — בלי איבוד נתונים</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>תזכורת בלחיצה אחת</h2>
+  <p>על כל השאלה — קישור ישיר ל־<strong>וואטסאפ</strong> עם הודעה מוכנה:</p>
+  <div class="card" style="margin-top:1em; text-align:start; max-width:560px">
+    <p>״היי שרה, תזכורת נעימה — מפת שבת · גדולה ×2 מיועדים להחזרה ב־י״ב בתשרי (26.9). תודה!״</p>
+  </div>
+  <p class="sub" style="margin-top:1em">ולצד זה — לחיצה על הטלפון מחייגת ישר</p>
+</section>
+
+<section class="slide">
+  <h2>לוח שנה יהודי — לא קישוט</h2>
+  <ul style="text-align:start; max-width:640px">
+    <li>כל תאריך מוצג <strong>כפול</strong>: לועזי + עברי</li>
+    <li>שבתות וחגים <strong>מוצללים</strong> ומסומנים בשם</li>
+    <li>כל יום מראה כמה החזרות צפויות — לחיצה פותחת פרטים</li>
+    <li>בטלפון התאים מקבלים נקודות צבעוניות — נקי וקריא</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>עוד פרטים שחשבנו עליהם</h2>
+  <ul style="text-align:start; max-width:640px">
+    <li><strong>מבקרים</strong> — מי שבאה להסתכל רשומה בנפרד, ועוברת אוטומטית ל״שואלת״ כשהיא לוקחת</li>
+    <li><strong>תמונות מפות</strong> — צילום ישיר מהטלפון או מהגלריה</li>
+    <li><strong>״כרגע אצל״</strong> — על כל מפה רואים מי מחזיק אותה</li>
+    <li>שמירה בענן — עובד מכל מכשיר, על אותם נתונים</li>
+    <li>הגנות: אי אפשר למחוק אדם שמחזיק מפות, כמות לא יורדת מתחת למושאל</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>מתחת למכסה</h2>
+  <div class="row">
+    <div class="card"><p><strong>React + Vite</strong><br>ממשק מהיר וקל</p></div>
+    <div class="card"><p><strong>Convex</strong><br>מסד נתונים בענן בזמן אמת</p></div>
+    <div class="card"><p><strong>Vercel</strong><br>אירוח מהיר ויציב</p></div>
+    <div class="card"><p><strong>Hebcal</strong><br>תאריכים עבריים וחגים</p></div>
+  </div>
+  <p class="sub" style="margin-top:1.2em">וגם: שרת MCP — אפשר לנהל את הגמ״ח דרך סוכן AI</p>
+</section>
+
+<section class="slide">
+  <div class="emoji">🌐</div>
+  <h2>חי באוויר</h2>
+  <p class="big"><a href="https://mapot-gemach.vercel.app">mapot-gemach.vercel.app</a></p>
+  <p class="sub" style="margin-top:1em">ניגשים מהטלפון, מהמחשב — אותם נתונים בכל מקום</p>
+</section>
+
+<section class="slide">
+  <div class="emoji">💛</div>
+  <h1>תודה!</h1>
+  <p class="big">גמ״ח מפות — כי השאלה טובה צריכה ניהול טוב</p>
+</section>
+
+<div class="nav">
+  <button id="next" aria-label="שקף הבא">הבא ‹</button>
+  <span class="counter" id="counter"></span>
+  <button id="prev" aria-label="שקף קודם">› הקודם</button>
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const dots = document.getElementById("dots");
+  const counter = document.getElementById("counter");
+  let i = 0;
+  slides.forEach(() => dots.appendChild(document.createElement("span")));
+  const dotEls = [...dots.children];
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, j) => s.classList.toggle("active", j === i));
+    dotEls.forEach((d, j) => d.classList.toggle("on", j === i));
+    counter.textContent = `${i + 1} / ${slides.length}`;
+  }
+  document.getElementById("next").onclick = () => show(i + 1);
+  document.getElementById("prev").onclick = () => show(i - 1);
+  document.addEventListener("keydown", (e) => {
+    // RTL: left arrow = forward
+    if (e.key === "ArrowLeft" || e.key === " " || e.key === "PageDown") show(i + 1);
+    if (e.key === "ArrowRight" || e.key === "PageUp") show(i - 1);
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".nav")) show(i + 1);
+  });
+  show(0);
+</script>
+</body>
+</html>
