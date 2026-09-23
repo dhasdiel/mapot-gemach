@@ -439,6 +439,47 @@ label,
   margin: 15vh auto 0;
 }
 
+.guide-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 42, 38, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.guide-card {
+  max-width: 520px;
+  width: 100%;
+  margin-top: 4vh;
+  margin-bottom: 4vh;
+}
+
+.guide-card h3 {
+  font-size: 1rem;
+  color: #6d5c44;
+  margin: 16px 0 6px;
+}
+
+.guide-row {
+  display: flex;
+  gap: 10px;
+  padding: 5px 0;
+  align-items: baseline;
+}
+
+.guide-row strong {
+  flex: 0 0 38%;
+  font-size: 0.9rem;
+}
+
+.guide-row .muted {
+  flex: 1;
+}
+
 /* phone: cells are ~45px wide — Hebrew date and chip text don't fit, so
    chips collapse to colored dots (full names/dates live in the day view) */
 @media (max-width: 480px) {

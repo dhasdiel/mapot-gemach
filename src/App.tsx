@@ -7,8 +7,10 @@ import Inventory from "./Inventory";
 import Calendar from "./Calendar";
 import People from "./People";
 import Catalog from "./Catalog";
+import Guide, { GuideButton } from "./Guide";
 
 const KEY_STORAGE = "gemach-key";
+const GUIDE_STORAGE = "gemach-guided";
 const IS_CATALOG = new URLSearchParams(location.search).has("catalog");
 
 export default function App() {
@@ -17,6 +19,12 @@ export default function App() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState("");
   const [tab, setTab] = useState<"loans" | "calendar" | "people" | "inventory">("loans");
+  const [showGuide, setShowGuide] = useState(() => !localStorage.getItem(GUIDE_STORAGE));
+
+  function closeGuide() {
+    localStorage.setItem(GUIDE_STORAGE, "1");
+    setShowGuide(false);
+  }
 
   // validate a stored key once on load — a wrong password clears it, but a
   // network failure keeps it and just reports the connectivity problem
@@ -53,7 +61,11 @@ export default function App() {
 
   return (
     <>
-      <h1>גמ״ח מפות</h1>
+      <div className="row spread">
+        <h1 style={{ margin: "8px 0 16px" }}>גמ״ח מפות</h1>
+        <GuideButton onClick={() => setShowGuide(true)} />
+      </div>
+      {showGuide && <Guide onClose={closeGuide} />}
       <div className="tabs" role="tablist" aria-label="ניווט">
         <button role="tab" aria-selected={tab === "loans"} aria-controls="main-panel" className={tab === "loans" ? "active" : ""} onClick={() => setTab("loans")}>
           השאלות
