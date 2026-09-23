@@ -51,20 +51,20 @@ export default function App() {
     <>
       <h1>גמ״ח מפות</h1>
       <div className="tabs" role="tablist" aria-label="ניווט">
-        <button role="tab" aria-selected={tab === "loans"} className={tab === "loans" ? "active" : ""} onClick={() => setTab("loans")}>
+        <button role="tab" aria-selected={tab === "loans"} aria-controls="main-panel" className={tab === "loans" ? "active" : ""} onClick={() => setTab("loans")}>
           השאלות
         </button>
-        <button role="tab" aria-selected={tab === "calendar"} className={tab === "calendar" ? "active" : ""} onClick={() => setTab("calendar")}>
+        <button role="tab" aria-selected={tab === "calendar"} aria-controls="main-panel" className={tab === "calendar" ? "active" : ""} onClick={() => setTab("calendar")}>
           לוח שנה
         </button>
-        <button role="tab" aria-selected={tab === "people"} className={tab === "people" ? "active" : ""} onClick={() => setTab("people")}>
+        <button role="tab" aria-selected={tab === "people"} aria-controls="main-panel" className={tab === "people" ? "active" : ""} onClick={() => setTab("people")}>
           אנשים
         </button>
-        <button role="tab" aria-selected={tab === "inventory"} className={tab === "inventory" ? "active" : ""} onClick={() => setTab("inventory")}>
+        <button role="tab" aria-selected={tab === "inventory"} aria-controls="main-panel" className={tab === "inventory" ? "active" : ""} onClick={() => setTab("inventory")}>
           מלאי
         </button>
       </div>
-      <div role="tabpanel" id={`panel-${tab}`} aria-label={tab}>
+      <div role="tabpanel" id="main-panel">
         {tab === "loans" ? (
           <Loans k={key} />
         ) : tab === "calendar" ? (

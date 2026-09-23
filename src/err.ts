@@ -2,7 +2,7 @@ const ERRORS: Record<string, string | ((detail: string) => string)> = {
   unauthorized: "סיסמה שגויה",
   not_enough_stock: "אין מספיק יחידות במלאי",
   item_on_loan: (d) => `לא ניתן למחוק — מושאלת כרגע${d ? ` אצל ${d}` : ""}`,
-  person_on_loan: (d) => `לא ניתן למחוק — יש ${d || ""} השאלות פעילות`.replace("  ", " "),
+  person_on_loan: (d) => `לא ניתן למחוק — ${d ? `יש ${d} ` : "יש "}השאלות פעילות`,
   quantity_below_loaned: "הכמות קטנה מהכמות שמושאלת כרגע",
   missing_name: "חסר שם השואל/ת",
   person_not_found: "האדם לא נמצא",

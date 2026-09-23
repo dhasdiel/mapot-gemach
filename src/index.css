@@ -153,6 +153,38 @@ button:disabled {
   cursor: default;
 }
 
+button:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+button.secondary:hover:not(:disabled),
+.qty-btn:hover:not(:disabled),
+.tabs button:not(.active):hover:not(:disabled),
+.btn-sm:hover:not(:disabled) {
+  background: #e3dac9;
+  filter: none;
+}
+
+button.danger:hover:not(:disabled) {
+  background: #fbe4e2;
+  filter: none;
+}
+
+button.notice-undo:hover:not(:disabled),
+button.hint-action:hover:not(:disabled) {
+  filter: none;
+  color: #145c2e;
+}
+
+button.hint-action:hover:not(:disabled) {
+  color: #5c3800;
+}
+
+.cal-cell:hover:not(:disabled) {
+  border-color: #c9bfa8;
+  filter: none;
+}
+
 button.btn-sm {
   min-height: 36px;
   padding: 6px 12px;

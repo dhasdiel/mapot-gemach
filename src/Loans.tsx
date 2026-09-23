@@ -66,7 +66,10 @@ export default function Loans({ k }: { k: string }) {
       await act(() => returnLoan({ key: k, id: loan._id }));
       setNotice({
         text: `✓ חזר למלאי — ${loan.borrowerName}`,
-        undo: () => act(() => unreturnLoan({ key: k, id: loan._id })),
+        undo: async () => {
+          setNotice(null);
+          await act(() => unreturnLoan({ key: k, id: loan._id }));
+        },
       });
     },
     onReturnItem: (itemId: Id<"items">) =>
@@ -172,7 +175,7 @@ export function LoanCard({
             <div key={i.itemId} className="row spread item-line">
               <span className="muted">
                 {i.label} ×{i.qty}
-                {back > 0 && ` — חזרו ${back}`}
+                {back > 0 && back < i.qty && ` — חזרו ${back}`}
               </span>
               {onReturnItem && remaining > 0 && (
                 <button
