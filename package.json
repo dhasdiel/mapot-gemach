@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "bin": {
+    "mapot-gemach-mcp": "mcp/server.mjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -13,20 +16,20 @@
   },
   "dependencies": {
     "@hebcal/core": "^6.9.3",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "convex": "^1.46.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
     "@types/node": "^24.13.6",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0",
-    "zod": "^3.25.76"
+    "vite": "^8.3.0"
   },
   "allowScripts": {
     "esbuild@0.27.0": true,

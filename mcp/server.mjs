@@ -1,5 +1,7 @@
+#!/usr/bin/env node
 // MCP server (stdio) exposing the gemach Convex functions as tools.
-// Run: node --env-file=.env.local mcp/server.mjs
+// Run: node --env-file=.env.local mcp/server.mjs  (local dev)
+//   or npx -y github:dhasdiel/mapot-gemach       (any machine, env via config)
 // Env: CONVEX_URL (or VITE_CONVEX_URL) + APP_PASSWORD — injected into every
 // call server-side, so agents never see or supply the password.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
