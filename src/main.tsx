@@ -6,6 +6,10 @@ import App from "./App.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ConvexProvider client={convex}>
