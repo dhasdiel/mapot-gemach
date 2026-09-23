@@ -4,6 +4,7 @@ import { useConvex } from "convex/react";
 import { api } from "../convex/_generated/api";
 import Loans from "./Loans";
 import Inventory from "./Inventory";
+import Calendar from "./Calendar";
 
 const KEY_STORAGE = "gemach-key";
 
@@ -11,7 +12,7 @@ export default function App() {
   const convex = useConvex();
   const [key, setKey] = useState(() => localStorage.getItem(KEY_STORAGE) ?? "");
   const [authed, setAuthed] = useState(false);
-  const [tab, setTab] = useState<"loans" | "inventory">("loans");
+  const [tab, setTab] = useState<"loans" | "calendar" | "inventory">("loans");
 
   // validate a stored key once on load
   useEffect(() => {
@@ -45,11 +46,14 @@ export default function App() {
         <button className={tab === "loans" ? "active" : ""} onClick={() => setTab("loans")}>
           השאלות
         </button>
+        <button className={tab === "calendar" ? "active" : ""} onClick={() => setTab("calendar")}>
+          לוח שנה
+        </button>
         <button className={tab === "inventory" ? "active" : ""} onClick={() => setTab("inventory")}>
           מלאי
         </button>
       </div>
-      {tab === "loans" ? <Loans k={key} /> : <Inventory k={key} />}
+      {tab === "loans" ? <Loans k={key} /> : tab === "calendar" ? <Calendar k={key} /> : <Inventory k={key} />}
     </>
   );
 }

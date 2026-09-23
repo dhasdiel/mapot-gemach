@@ -90,7 +90,7 @@ export default function Loans({ k }: { k: string }) {
   );
 }
 
-function LoanCard({
+export function LoanCard({
   loan,
   onReturn,
   onDelete,

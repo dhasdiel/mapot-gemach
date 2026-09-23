@@ -168,6 +168,64 @@ label {
   padding: 30px 0;
 }
 
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-dow {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #8a8378;
+  padding: 4px 0;
+}
+
+.cal-cell {
+  min-height: 62px;
+  background: #fff;
+  border: 1px solid #e6e0d6;
+  border-radius: 8px;
+  padding: 4px;
+  font-size: 0.8rem;
+}
+
+.cal-cell.today {
+  border-color: #6d5c44;
+  border-width: 2px;
+}
+
+.cal-cell.selected {
+  background: #f3ede3;
+}
+
+.cal-cell.clickable {
+  cursor: pointer;
+}
+
+.cal-num {
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.cal-chip {
+  display: block;
+  font-size: 0.68rem;
+  background: #e6f4ea;
+  color: #1e7a3c;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-chip.late {
+  background: #fbe4e2;
+  color: #b3261e;
+}
+
 .login {
   max-width: 340px;
   margin: 15vh auto 0;
