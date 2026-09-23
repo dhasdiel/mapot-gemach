@@ -5,6 +5,7 @@ import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
 import { dayHolidays, hebrewDateShort } from "./hebrew";
+import { CalendarPlus, Check, MessageCircle, Phone, RotateCcw, Trash2 } from "lucide-react";
 import { waLink } from "./contact";
 
 const DAY = 86400000;
@@ -194,9 +195,13 @@ export function LoanCard({
         <div className="contact-links">
           {loan.phone && (
             <>
-              <a href={`tel:${loan.phone}`}>{loan.phone}</a>
+              <a href={`tel:${loan.phone}`}>
+                <Phone size={14} />
+                {loan.phone}
+              </a>
               {wa && (
                 <a href={wa} target="_blank" rel="noreferrer">
+                  <MessageCircle size={14} />
                   וואטסאפ
                 </a>
               )}
@@ -213,6 +218,7 @@ export function LoanCard({
               onClick={onExtend}
               aria-label={`הארכת ההשאלה של ${loan.borrowerName} בשבוע`}
             >
+              <CalendarPlus size={15} />
               +שבוע
             </button>
           )}
@@ -222,6 +228,7 @@ export function LoanCard({
               onClick={onReturn}
               aria-label={`סימון ההשאלה של ${loan.borrowerName} כהוחזרה`}
             >
+              <Check size={15} />
               הוחזר
             </button>
           )}
@@ -231,6 +238,7 @@ export function LoanCard({
               onClick={onUnreturn}
               aria-label={`ביטול החזרה של ${loan.borrowerName}`}
             >
+              <RotateCcw size={15} />
               בטל החזרה
             </button>
           )}
@@ -239,6 +247,7 @@ export function LoanCard({
             onClick={onDelete}
             aria-label={`מחיקת ההשאלה של ${loan.borrowerName}`}
           >
+            <Trash2 size={15} />
             מחיקה
           </button>
         </div>

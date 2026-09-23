@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc } from "../convex/_generated/dataModel";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { LoanCard } from "./Loans";
 import { errMsg } from "./err";
 import {
@@ -68,12 +69,20 @@ export default function Calendar({ k }: { k: string }) {
   return (
     <>
       <div className="row spread" style={{ marginBottom: 10 }}>
-        <button className="secondary" onClick={() => setMonth(new Date(first.getFullYear(), first.getMonth() - 1, 1))}>
-          הקודם
+        <button
+          className="secondary"
+          aria-label="חודש קודם"
+          onClick={() => setMonth(new Date(first.getFullYear(), first.getMonth() - 1, 1))}
+        >
+          <ChevronRight size={20} />
         </button>
         <h2 style={{ margin: 0 }}>{monthLabel}</h2>
-        <button className="secondary" onClick={() => setMonth(new Date(first.getFullYear(), first.getMonth() + 1, 1))}>
-          הבא
+        <button
+          className="secondary"
+          aria-label="חודש הבא"
+          onClick={() => setMonth(new Date(first.getFullYear(), first.getMonth() + 1, 1))}
+        >
+          <ChevronLeft size={20} />
         </button>
       </div>
 
@@ -114,11 +123,15 @@ export default function Calendar({ k }: { k: string }) {
               {dayHolidays.map((h) => (
                 <span key={h} className="cal-chip holiday">{h}</span>
               ))}
-              {dayLoans.map((l) => (
-                <span key={l._id} className={"cal-chip" + (l.dueAt < Date.now() ? " late" : "")}>
-                  {l.borrowerName}
+              {dayLoans.length > 0 && (
+                <span
+                  className={
+                    "cal-chip" + (dayLoans.some((l) => l.dueAt < Date.now()) ? " late" : "")
+                  }
+                >
+                  {dayLoans.length} החזרות
                 </span>
-              ))}
+              )}
             </button>
           );
         })}
