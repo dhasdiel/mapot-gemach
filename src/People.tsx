@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
+import { waLink } from "./contact";
 
 export default function People({ k }: { k: string }) {
   const people = useQuery(api.gemach.listPeople, { key: k });
@@ -42,23 +43,29 @@ export default function People({ k }: { k: string }) {
             {person.phone && (
               <>
                 <a href={`tel:${person.phone}`}>{person.phone}</a>
-                <a
-                  href={`https://wa.me/${person.phone.replace(/\D/g, "").replace(/^0/, "972")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  וואטסאפ
-                </a>
+                {waLink(person.phone) && (
+                  <a href={waLink(person.phone)!} target="_blank" rel="noreferrer">
+                    וואטסאפ
+                  </a>
+                )}
               </>
             )}
           </div>
         </div>
         {person.notes && <div className="muted" style={{ marginTop: 4 }}>{person.notes}</div>}
         <div className="row" style={{ marginTop: 8, justifyContent: "flex-end" }}>
-          <button className="secondary" onClick={() => { setEditId(person._id); setShowForm(false); }}>
+          <button
+            className="secondary"
+            onClick={() => { setEditId(person._id); setShowForm(false); }}
+            aria-label={`עריכת ${person.name}`}
+          >
             עריכה
           </button>
-          <button className="danger" onClick={() => remove(person)}>
+          <button
+            className="danger"
+            onClick={() => remove(person)}
+            aria-label={`מחיקת ${person.name}`}
+          >
             מחיקה
           </button>
         </div>

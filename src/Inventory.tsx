@@ -9,12 +9,24 @@ type Item = Doc<"items"> & { available: number };
 
 export default function Inventory({ k }: { k: string }) {
   const items = useQuery(api.gemach.listItems, { key: k });
+  const loans = useQuery(api.gemach.listLoans, { key: k });
   const removeItem = useMutation(api.gemach.removeItem);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<Id<"items"> | null>(null);
   const [error, setError] = useState("");
 
   if (!items) return <div className="empty">טוען…</div>;
+
+  // "who has my big white cloth?" — itemId → borrowers holding it right now
+  const holders = new Map<string, string[]>();
+  for (const loan of loans ?? []) {
+    if (loan.returnedAt !== undefined) continue;
+    for (const li of loan.items) {
+      const arr = holders.get(li.itemId) ?? [];
+      arr.push(`${loan.borrowerName} ×${li.qty}`);
+      holders.set(li.itemId, arr);
+    }
+  }
 
   return (
     <>
@@ -40,12 +52,22 @@ export default function Inventory({ k }: { k: string }) {
                 זמין {item.available} מתוך {item.quantity}
               </span>
             </div>
+            {(holders.get(item._id)?.length ?? 0) > 0 && (
+              <div className="muted" style={{ marginTop: 6 }}>
+                כרגע אצל: {holders.get(item._id)!.join(" · ")}
+              </div>
+            )}
             <div className="row" style={{ marginTop: 8, justifyContent: "flex-end" }}>
-              <button className="secondary" onClick={() => { setEditId(item._id); setShowForm(false); }}>
+              <button
+                className="secondary"
+                onClick={() => { setEditId(item._id); setShowForm(false); }}
+                aria-label={`עריכת ${item.name}`}
+              >
                 עריכה
               </button>
               <button
                 className="danger"
+                aria-label={`מחיקת ${item.name}`}
                 onClick={async () => {
                   if (!confirm("למחוק את המפה?")) return;
                   try {

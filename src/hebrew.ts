@@ -36,3 +36,18 @@ export function hebrewDayLabel(date: Date): string {
 export function hebrewDateShort(ts: number): string {
   return new HDate(new Date(ts)).renderGematriya(true).split(" ").slice(0, 2).join(" ");
 }
+
+/** e.g. "תשרי תשפ״ו" — pairs with the Gregorian month label */
+const monthYearFmt = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
+  month: "long",
+  year: "numeric",
+});
+export function hebrewMonthYear(date: Date): string {
+  return monthYearFmt.format(date);
+}
+
+/** holiday names for a single Gregorian day, [] when none */
+export function dayHolidays(date: Date): string[] {
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+  return holidaysForRange(date, end).get(dayKey(date.getTime())) ?? [];
+}

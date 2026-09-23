@@ -13,6 +13,20 @@ function checkKey(key: string) {
   }
 }
 
+// ponytail: Israeli-centric — empty ok, otherwise ≥9 digits after stripping
+// punctuation. phoneDigits is the non-throwing form used for dedupe compares
+// on stored rows (legacy data may be short).
+function phoneDigits(phone: string) {
+  return phone.replace(/\D/g, "");
+}
+function normPhone(phone: string) {
+  const digits = phoneDigits(phone);
+  if (digits && digits.length < 9) throw new ConvexError("invalid_phone");
+  return digits;
+}
+
+const DAY = 86400000;
+
 async function availableMap(ctx: { db: any }) {
   const [items, loans] = await Promise.all([
     ctx.db.query("items").collect(),
@@ -57,9 +71,15 @@ export const addPerson = mutation({
   },
   handler: async (ctx, args) => {
     checkKey(args.key);
-    if (!args.name.trim()) throw new ConvexError("missing_name");
+    const name = args.name.trim();
+    if (!name) throw new ConvexError("missing_name");
+    const phone = normPhone(args.phone);
+    const people = await ctx.db.query("people").collect();
+    if (people.some((p) => p.name === name && phoneDigits(p.phone) === phone)) {
+      throw new ConvexError("duplicate_person");
+    }
     return ctx.db.insert("people", {
-      name: args.name.trim(),
+      name,
       phone: args.phone.trim(),
       visitor: args.visitor,
       notes: args.notes?.trim() || undefined,
@@ -79,9 +99,17 @@ export const updatePerson = mutation({
   },
   handler: async (ctx, args) => {
     checkKey(args.key);
-    if (!args.name.trim()) throw new ConvexError("missing_name");
+    const name = args.name.trim();
+    if (!name) throw new ConvexError("missing_name");
+    const phone = normPhone(args.phone);
+    const people = await ctx.db.query("people").collect();
+    if (
+      people.some((p) => p._id !== args.id && p.name === name && phoneDigits(p.phone) === phone)
+    ) {
+      throw new ConvexError("duplicate_person");
+    }
     await ctx.db.patch(args.id, {
-      name: args.name.trim(),
+      name,
       phone: args.phone.trim(),
       visitor: args.visitor,
       notes: args.notes?.trim() || undefined,
@@ -93,6 +121,12 @@ export const removePerson = mutation({
   args: { key: v.string(), id: v.id("people") },
   handler: async (ctx, args) => {
     checkKey(args.key);
+    const active = await ctx.db
+      .query("loans")
+      .filter((q) => q.eq(q.field("returnedAt"), undefined))
+      .collect();
+    const holding = active.filter((l) => l.personId === args.id).length;
+    if (holding > 0) throw new ConvexError(`person_on_loan:${holding}`);
     await ctx.db.delete(args.id);
   },
 });
@@ -163,8 +197,11 @@ export const removeItem = mutation({
       .query("loans")
       .filter((q) => q.eq(q.field("returnedAt"), undefined))
       .collect();
-    if (active.some((l) => l.items.some((li) => li.itemId === args.id))) {
-      throw new ConvexError("item_on_loan");
+    const holders = active
+      .filter((l) => l.items.some((li) => li.itemId === args.id))
+      .map((l) => l.borrowerName);
+    if (holders.length > 0) {
+      throw new ConvexError(`item_on_loan:${[...new Set(holders)].join("، ")}`);
     }
     await ctx.db.delete(args.id);
   },
@@ -175,7 +212,13 @@ export const listLoans = query({
   handler: async (ctx, args) => {
     checkKey(args.key);
     const loans = await ctx.db.query("loans").collect();
-    return loans.sort((a, b) => b.borrowedAt - a.borrowedAt);
+    // active first, soonest due on top (overdue bubble up); history newest first
+    return loans.sort((a, b) => {
+      const ra = a.returnedAt !== undefined;
+      const rb = b.returnedAt !== undefined;
+      if (ra !== rb) return ra ? 1 : -1;
+      return ra ? b.returnedAt! - a.returnedAt! : a.dueAt - b.dueAt;
+    });
   },
 });
 
@@ -192,6 +235,9 @@ export const createLoan = mutation({
   handler: async (ctx, args) => {
     checkKey(args.key);
     if (args.items.length === 0) throw new ConvexError("no_items");
+    if (args.dueAt < new Date().setHours(0, 0, 0, 0)) {
+      throw new ConvexError("due_in_past");
+    }
 
     // registered borrower: pull name/phone from the people record and clear
     // their visitor flag — they're borrowing now
@@ -232,6 +278,29 @@ export const returnLoan = mutation({
   handler: async (ctx, args) => {
     checkKey(args.key);
     await ctx.db.patch(args.id, { returnedAt: Date.now() });
+  },
+});
+
+// mis-tap recovery: move a returned loan back to active
+export const unreturnLoan = mutation({
+  args: { key: v.string(), id: v.id("loans") },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    const loan = await ctx.db.get(args.id);
+    if (!loan || loan.returnedAt === undefined) throw new ConvexError("not_returned");
+    await ctx.db.patch(args.id, { returnedAt: undefined });
+  },
+});
+
+// the common hallway request: "שבוע נוסף"
+export const extendLoan = mutation({
+  args: { key: v.string(), id: v.id("loans") },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    const loan = await ctx.db.get(args.id);
+    if (!loan) throw new ConvexError("loan_not_found");
+    if (loan.returnedAt !== undefined) throw new ConvexError("already_returned");
+    await ctx.db.patch(args.id, { dueAt: loan.dueAt + 7 * DAY });
   },
 });
 

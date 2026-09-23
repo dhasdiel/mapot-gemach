@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
-import { hebrewDateShort } from "./hebrew";
+import { dayHolidays, hebrewDateShort } from "./hebrew";
+import { waLink } from "./contact";
 
 const DAY = 86400000;
 
@@ -20,33 +21,52 @@ function dueBadge(dueAt: number) {
   return <span className="badge ok">נותרו {days} ימים</span>;
 }
 
-// ponytail: assumes Israeli numbers — 05x… → 9725x… for wa.me
-function whatsappLink(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  const intl = digits.startsWith("0") ? "972" + digits.slice(1) : digits;
-  return `https://wa.me/${intl}`;
+function reminderText(loan: Doc<"loans">) {
+  const items = loan.items.map((i) => `${i.label} ×${i.qty}`).join(" · ");
+  return `היי ${loan.borrowerName}, תזכורת נעימה — ${items} מיועדים להחזרה ב־${hebrewDateShort(loan.dueAt)} (${fmtDate(loan.dueAt)}). תודה!`;
 }
 
 export default function Loans({ k }: { k: string }) {
   const loans = useQuery(api.gemach.listLoans, { key: k });
   const returnLoan = useMutation(api.gemach.returnLoan);
+  const unreturnLoan = useMutation(api.gemach.unreturnLoan);
+  const extendLoan = useMutation(api.gemach.extendLoan);
   const removeLoan = useMutation(api.gemach.removeLoan);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(""), 4000);
+    return () => clearTimeout(t);
+  }, [notice]);
 
   if (!loans) return <div className="empty">טוען…</div>;
 
   const active = loans.filter((l) => l.returnedAt === undefined);
   const returned = loans.filter((l) => l.returnedAt !== undefined);
+  const overdue = active.filter((l) => l.dueAt < Date.now());
+  const upcoming = active.filter((l) => l.dueAt >= Date.now());
 
-  async function act(fn: () => Promise<unknown>) {
+  async function act(fn: () => Promise<unknown>, done?: string) {
     try {
       setError("");
       await fn();
+      if (done) setNotice(done);
     } catch (e) {
       setError(errMsg(e));
     }
   }
+
+  const cardProps = (loan: Doc<"loans">) => ({
+    onReturn: () =>
+      act(() => returnLoan({ key: k, id: loan._id }), `✓ חזר למלאי — ${loan.borrowerName}`),
+    onExtend: () => act(() => extendLoan({ key: k, id: loan._id })),
+    onDelete: () => {
+      if (confirm("למחוק את ההשאלה?")) act(() => removeLoan({ key: k, id: loan._id }));
+    },
+  });
 
   return (
     <>
@@ -59,19 +79,22 @@ export default function Loans({ k }: { k: string }) {
 
       {showForm && <NewLoan k={k} onDone={() => setShowForm(false)} />}
       {error && <div className="error">{error}</div>}
+      {notice && <div className="notice" role="status">{notice}</div>}
+
+      {overdue.length > 0 && (
+        <>
+          <h2 className="late-title">באיחור ({overdue.length})</h2>
+          {overdue.map((loan) => (
+            <LoanCard key={loan._id} loan={loan} {...cardProps(loan)} />
+          ))}
+        </>
+      )}
+
+      {upcoming.map((loan) => (
+        <LoanCard key={loan._id} loan={loan} {...cardProps(loan)} />
+      ))}
 
       {active.length === 0 && !showForm && <div className="empty">אין השאלות פעילות</div>}
-
-      {active.map((loan) => (
-        <LoanCard
-          key={loan._id}
-          loan={loan}
-          onReturn={() => act(() => returnLoan({ key: k, id: loan._id }))}
-          onDelete={() => {
-            if (confirm("למחוק את ההשאלה?")) act(() => removeLoan({ key: k, id: loan._id }));
-          }}
-        />
-      ))}
 
       {returned.length > 0 && (
         <>
@@ -80,6 +103,7 @@ export default function Loans({ k }: { k: string }) {
             <LoanCard
               key={loan._id}
               loan={loan}
+              onUnreturn={() => act(() => unreturnLoan({ key: k, id: loan._id }))}
               onDelete={() => {
                 if (confirm("למחוק מההיסטוריה?")) act(() => removeLoan({ key: k, id: loan._id }));
               }}
@@ -94,13 +118,18 @@ export default function Loans({ k }: { k: string }) {
 export function LoanCard({
   loan,
   onReturn,
+  onExtend,
+  onUnreturn,
   onDelete,
 }: {
   loan: Doc<"loans">;
   onReturn?: () => void;
+  onExtend?: () => void;
+  onUnreturn?: () => void;
   onDelete: () => void;
 }) {
   const overdue = loan.returnedAt === undefined && loan.dueAt < Date.now();
+  const wa = waLink(loan.phone, reminderText(loan));
   return (
     <div className={"card" + (overdue ? " overdue" : "")}>
       <div className="row spread">
@@ -112,16 +141,18 @@ export function LoanCard({
         )}
       </div>
       <div className="muted" style={{ marginTop: 4 }}>
-        {loan.items.map((i) => `${i.label} ×${i.qty}`).join("، ")}
+        {loan.items.map((i) => `${i.label} ×${i.qty}`).join(" · ")}
       </div>
       <div className="row spread" style={{ marginTop: 8 }}>
         <div className="contact-links">
           {loan.phone && (
             <>
               <a href={`tel:${loan.phone}`}>{loan.phone}</a>
-              <a href={whatsappLink(loan.phone)} target="_blank" rel="noreferrer">
-                וואטסאפ
-              </a>
+              {wa && (
+                <a href={wa} target="_blank" rel="noreferrer">
+                  וואטסאפ
+                </a>
+              )}
             </>
           )}
           <span className="muted">
@@ -129,12 +160,38 @@ export function LoanCard({
           </span>
         </div>
         <div className="row">
+          {onExtend && (
+            <button
+              className="secondary"
+              onClick={onExtend}
+              aria-label={`הארכת ההשאלה של ${loan.borrowerName} בשבוע`}
+            >
+              +שבוע
+            </button>
+          )}
           {onReturn && (
-            <button className="secondary" onClick={onReturn}>
+            <button
+              className="secondary"
+              onClick={onReturn}
+              aria-label={`סימון ההשאלה של ${loan.borrowerName} כהוחזרה`}
+            >
               הוחזר
             </button>
           )}
-          <button className="danger" onClick={onDelete}>
+          {onUnreturn && (
+            <button
+              className="secondary"
+              onClick={onUnreturn}
+              aria-label={`ביטול החזרה של ${loan.borrowerName}`}
+            >
+              בטל החזרה
+            </button>
+          )}
+          <button
+            className="danger"
+            onClick={onDelete}
+            aria-label={`מחיקת ההשאלה של ${loan.borrowerName}`}
+          >
             מחיקה
           </button>
         </div>
@@ -158,9 +215,21 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (!items || !people) return null;
+  if (!items || !people) {
+    return (
+      <div className="card">
+        <span className="muted">טוען…</span>
+      </div>
+    );
+  }
 
-  const isNew = personId === "__new__";
+  // nobody registered yet → jump straight to the inline new-person fields
+  const sel = personId || (people.length === 0 ? "__new__" : "");
+  const isNew = sel === "__new__";
+  const dueDate = new Date(due + "T12:00:00");
+  const dueHolidays = due ? dayHolidays(dueDate) : [];
+  const isShabbat = due && dueDate.getDay() === 6;
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -176,7 +245,7 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
       if (isNew) {
         borrowerId = await addPerson({ key: k, name, phone });
       } else {
-        const person = people?.find((p) => p._id === personId);
+        const person = people?.find((p) => p._id === sel);
         if (!person) throw new Error("missing_name");
         borrowerName = person.name;
         borrowerPhone = person.phone;
@@ -188,7 +257,7 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
         phone: borrowerPhone,
         personId: borrowerId,
         items: selected,
-        dueAt: new Date(due + "T12:00:00").getTime(),
+        dueAt: dueDate.getTime(),
         notes: notes || undefined,
       });
       onDone();
@@ -202,62 +271,108 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
     <form className="card" onSubmit={submit}>
       <div className="row" style={{ gap: 12 }}>
         <div style={{ flex: 1, minWidth: 140 }}>
-          <label>שואל/ת</label>
-          <select value={personId} onChange={(e) => setPersonId(e.target.value)} required>
+          <label htmlFor="borrower">שואל/ת</label>
+          <select
+            id="borrower"
+            value={sel}
+            onChange={(e) => setPersonId(e.target.value)}
+            required
+          >
             <option value="" disabled>
               בחרי…
             </option>
             {people.map((p) => (
               <option key={p._id} value={p._id}>
                 {p.name}
+                {p.phone ? ` — ${p.phone}` : ""}
                 {p.visitor ? " (בא/ה לראות)" : ""}
               </option>
             ))}
             <option value="__new__">+ אדם חדש</option>
           </select>
+          {people.length === 0 && (
+            <div className="hint">אין עדיין אנשים רשומים — מלאי שם וטלפון והאדם יירשם</div>
+          )}
         </div>
         {isNew && (
           <>
             <div style={{ flex: 1, minWidth: 140 }}>
-              <label>שם</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} required />
+              <label htmlFor="newname">שם</label>
+              <input id="newname" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
             <div style={{ flex: 1, minWidth: 140 }}>
-              <label>טלפון</label>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
+              <label htmlFor="newphone">טלפון</label>
+              <input
+                id="newphone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                dir="ltr"
+              />
             </div>
           </>
         )}
         <div style={{ minWidth: 150 }}>
-          <label>תאריך החזרה</label>
-          <input type="date" value={due} onChange={(e) => setDue(e.target.value)} required />
+          <label htmlFor="due">תאריך החזרה</label>
+          <input
+            id="due"
+            type="date"
+            value={due}
+            min={todayStr}
+            onChange={(e) => setDue(e.target.value)}
+            required
+          />
+          {due && (
+            <div className={"hint" + (isShabbat || dueHolidays.length > 0 ? " warn" : "")}>
+              {hebrewDateShort(dueDate.getTime())}
+              {isShabbat && " · יום שבת — להחזרה אחרי שבת?"}
+              {dueHolidays.map((h) => ` · ${h}`)}
+            </div>
+          )}
         </div>
       </div>
 
       <label>מפות</label>
       {items.length === 0 && <div className="muted">אין מפות במלאי — הוסיפי קודם בלשונית מלאי</div>}
-      {items.map((item) => (
-        <div key={item._id} className="row spread" style={{ padding: "6px 0" }}>
-          <span>
-            {[item.name, item.size, item.color].filter(Boolean).join(" · ")}{" "}
-            <span className="muted">(זמין {item.available})</span>
-          </span>
-          <span className="qty-input">
-            <input
-              type="number"
-              min={0}
-              max={item.available}
-              value={qty[item._id] ?? 0}
-              onChange={(e) =>
-                setQty({ ...qty, [item._id]: Math.max(0, Number(e.target.value)) })
-              }
-            />
-          </span>
-        </div>
-      ))}
+      {items.map((item) => {
+        const q = Math.min(qty[item._id] ?? 0, item.available);
+        const set = (v: number) =>
+          setQty({ ...qty, [item._id]: Math.max(0, Math.min(v, item.available)) });
+        const itemDesc = [item.name, item.size, item.color].filter(Boolean).join(" · ");
+        return (
+          <div key={item._id} className="row spread" style={{ padding: "6px 0" }}>
+            <span>
+              {itemDesc} <span className="muted">(זמין {item.available})</span>
+            </span>
+            <span className="qty-input">
+              <button
+                type="button"
+                className="qty-btn"
+                onClick={() => set(q - 1)}
+                disabled={q === 0}
+                aria-label={`פחות אחת — ${itemDesc}`}
+              >
+                −
+              </button>
+              <span className="qty-val" aria-live="polite">
+                {q}
+              </span>
+              <button
+                type="button"
+                className="qty-btn"
+                onClick={() => set(q + 1)}
+                disabled={q >= item.available}
+                aria-label={`עוד אחת — ${itemDesc}`}
+              >
+                +
+              </button>
+            </span>
+          </div>
+        );
+      })}
 
-      <label>הערות</label>
-      <input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      <label htmlFor="notes">הערות</label>
+      <input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
 
       {error && <div className="error">{error}</div>}
       <div style={{ marginTop: 12 }}>

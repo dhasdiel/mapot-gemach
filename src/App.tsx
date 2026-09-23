@@ -43,17 +43,17 @@ export default function App() {
   return (
     <>
       <h1>גמ״ח מפות</h1>
-      <div className="tabs">
-        <button className={tab === "loans" ? "active" : ""} onClick={() => setTab("loans")}>
+      <div className="tabs" role="tablist" aria-label="ניווט">
+        <button role="tab" aria-selected={tab === "loans"} className={tab === "loans" ? "active" : ""} onClick={() => setTab("loans")}>
           השאלות
         </button>
-        <button className={tab === "calendar" ? "active" : ""} onClick={() => setTab("calendar")}>
+        <button role="tab" aria-selected={tab === "calendar"} className={tab === "calendar" ? "active" : ""} onClick={() => setTab("calendar")}>
           לוח שנה
         </button>
-        <button className={tab === "people" ? "active" : ""} onClick={() => setTab("people")}>
+        <button role="tab" aria-selected={tab === "people"} className={tab === "people" ? "active" : ""} onClick={() => setTab("people")}>
           אנשים
         </button>
-        <button className={tab === "inventory" ? "active" : ""} onClick={() => setTab("inventory")}>
+        <button role="tab" aria-selected={tab === "inventory"} className={tab === "inventory" ? "active" : ""} onClick={() => setTab("inventory")}>
           מלאי
         </button>
       </div>

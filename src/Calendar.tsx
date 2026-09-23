@@ -4,13 +4,20 @@ import { api } from "../convex/_generated/api";
 import type { Doc } from "../convex/_generated/dataModel";
 import { LoanCard } from "./Loans";
 import { errMsg } from "./err";
-import { dayKey, hebrewDateShort, hebrewDayLabel, holidaysForRange } from "./hebrew";
+import {
+  dayKey,
+  hebrewDateShort,
+  hebrewDayLabel,
+  hebrewMonthYear,
+  holidaysForRange,
+} from "./hebrew";
 
 const DOW = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
 
 export default function Calendar({ k }: { k: string }) {
   const loans = useQuery(api.gemach.listLoans, { key: k });
   const returnLoan = useMutation(api.gemach.returnLoan);
+  const extendLoan = useMutation(api.gemach.extendLoan);
   const removeLoan = useMutation(api.gemach.removeLoan);
   const [month, setMonth] = useState(() => {
     const d = new Date();
@@ -42,9 +49,11 @@ export default function Calendar({ k }: { k: string }) {
   while (cells.length % 7 !== 0) cells.push(null);
 
   const todayKey = dayKey(Date.now());
-  const monthLabel = first.toLocaleDateString("he-IL", { month: "long", year: "numeric" });
+  const monthLabel =
+    first.toLocaleDateString("he-IL", { month: "long", year: "numeric" }) +
+    " · " +
+    hebrewMonthYear(first);
   const selectedLoans = selected ? (byDay.get(selected) ?? []) : [];
-  const hasContent = (key: string) => (byDay.get(key)?.length ?? 0) + (holidays.get(key)?.length ?? 0) > 0;
 
   async function act(fn: () => Promise<unknown>) {
     try {
@@ -67,26 +76,34 @@ export default function Calendar({ k }: { k: string }) {
         </button>
       </div>
 
-      <div className="cal-grid">
+      <div className="cal-grid" role="grid" aria-label={monthLabel}>
         {DOW.map((d) => (
-          <div key={d} className="cal-dow">{d}</div>
+          <div key={d} className="cal-dow" role="columnheader">{d}</div>
         ))}
         {cells.map((date, i) => {
-          if (!date) return <div key={i} />;
+          if (!date) return <div key={i} role="presentation" />;
           const key = dayKey(date.getTime());
           const dayLoans = byDay.get(key) ?? [];
           const dayHolidays = holidays.get(key) ?? [];
+          const isShabbat = date.getDay() === 6;
+          const label =
+            `${date.getDate()} ${hebrewDayLabel(date)}` +
+            (dayHolidays.length ? `, ${dayHolidays.join(", ")}` : "") +
+            (dayLoans.length ? `, ${dayLoans.length} השאלות` : "");
           return (
-            <div
+            <button
+              type="button"
               key={i}
               className={
                 "cal-cell" +
                 (key === todayKey ? " today" : "") +
-                (date.getDay() === 6 ? " shabbat" : "") +
-                (selected === key ? " selected" : "") +
-                (hasContent(key) ? " clickable" : "")
+                (isShabbat ? " shabbat" : "") +
+                (dayHolidays.length ? " chag" : "") +
+                (selected === key ? " selected" : "")
               }
-              onClick={() => hasContent(key) && setSelected(selected === key ? null : key)}
+              aria-label={label}
+              aria-pressed={selected === key}
+              onClick={() => setSelected(selected === key ? null : key)}
             >
               <div className="row spread">
                 <span className="cal-num">{date.getDate()}</span>
@@ -100,7 +117,7 @@ export default function Calendar({ k }: { k: string }) {
                   {l.borrowerName}
                 </span>
               ))}
-            </div>
+            </button>
           );
         })}
       </div>
@@ -118,11 +135,13 @@ export default function Calendar({ k }: { k: string }) {
           {(holidays.get(selected) ?? []).map((h) => (
             <div key={h} className="card"><span className="badge warn">{h}</span></div>
           ))}
+          {selectedLoans.length === 0 && <div className="empty">אין החזרות ביום הזה</div>}
           {selectedLoans.map((loan) => (
             <LoanCard
               key={loan._id}
               loan={loan}
               onReturn={() => act(() => returnLoan({ key: k, id: loan._id }))}
+              onExtend={() => act(() => extendLoan({ key: k, id: loan._id }))}
               onDelete={() => {
                 if (confirm("למחוק את ההשאלה?")) act(() => removeLoan({ key: k, id: loan._id }));
               }}
