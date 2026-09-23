@@ -408,6 +408,17 @@ label,
   background: #e3dac9;
 }
 
+/* iOS Safari won't open a display:none/hidden file input from a label tap —
+   keep it in the layout, just invisible */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .login {
   max-width: 340px;
   margin: 15vh auto 0;

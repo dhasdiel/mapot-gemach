@@ -87,7 +87,7 @@ export default function Loans({ k }: { k: string }) {
 
   return (
     <>
-      <div className="row spread">
+      <div className="row spread" style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>השאלות פעילות ({active.length})</h2>
         <button onClick={() => setShowForm(!showForm)}>
           {showForm ? "ביטול" : "+ השאלה חדשה"}

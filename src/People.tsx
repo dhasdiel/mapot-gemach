@@ -80,7 +80,7 @@ export default function People({ k }: { k: string }) {
 
   return (
     <>
-      <div className="row spread">
+      <div className="row spread" style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>אנשים ({people.length})</h2>
         <button onClick={() => { setShowForm(!showForm); setEditId(null); }}>
           {showForm ? "ביטול" : "+ אדם חדש"}
