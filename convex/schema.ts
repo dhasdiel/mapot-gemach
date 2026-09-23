@@ -14,6 +14,7 @@ export default defineSchema({
     size: v.string(),
     color: v.string(),
     quantity: v.number(),
+    photoId: v.optional(v.id("_storage")),
   }),
   loans: defineTable({
     borrowerName: v.string(),

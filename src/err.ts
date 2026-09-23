@@ -15,6 +15,7 @@ const ERRORS: Record<string, string | ((detail: string) => string)> = {
   no_items: "לא נבחרו מפות",
   invalid_quantity: "כמות לא תקינה",
   item_not_found: "המפה לא נמצאה",
+  upload_failed: "העלאת התמונה נכשלה",
 };
 
 export function errMsg(e: unknown): string {

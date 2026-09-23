@@ -1,11 +1,12 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { Camera } from "lucide-react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
 
-type Item = Doc<"items"> & { available: number };
+type Item = Doc<"items"> & { available: number; photoUrl?: string | null };
 
 export default function Inventory({ k }: { k: string }) {
   const items = useQuery(api.gemach.listItems, { key: k });
@@ -47,7 +48,10 @@ export default function Inventory({ k }: { k: string }) {
         ) : (
           <div key={item._id} className="card">
             <div className="row spread">
-              <strong>{[item.name, item.size, item.color].filter(Boolean).join(" · ")}</strong>
+              <span className="row" style={{ flexWrap: "nowrap" }}>
+                {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo" />}
+                <strong>{[item.name, item.size, item.color].filter(Boolean).join(" · ")}</strong>
+              </span>
               <span className={"badge " + (item.available > 0 ? "ok" : "late")}>
                 זמין {item.available} מתוך {item.quantity}
               </span>
@@ -91,23 +95,47 @@ export default function Inventory({ k }: { k: string }) {
 function ItemForm({ k, item, onDone }: { k: string; item?: Item; onDone: () => void }) {
   const addItem = useMutation(api.gemach.addItem);
   const updateItem = useMutation(api.gemach.updateItem);
+  const generateUploadUrl = useMutation(api.gemach.generateUploadUrl);
   const [name, setName] = useState(item?.name ?? "");
   const [size, setSize] = useState(item?.size ?? "");
   const [color, setColor] = useState(item?.color ?? "");
   const [quantity, setQuantity] = useState(item?.quantity ?? 1);
+  const [file, setFile] = useState<File | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const preview = file ? URL.createObjectURL(file) : removePhoto ? null : (item?.photoUrl ?? null);
+
+  async function uploadPhoto() {
+    if (!file) return undefined;
+    const url = await generateUploadUrl({ key: k });
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!res.ok) throw new Error("upload_failed");
+    const { storageId } = await res.json();
+    return storageId as Id<"_storage">;
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
     try {
+      const photoId = await uploadPhoto();
       const args = { name, size, color, quantity };
       if (item) {
-        await updateItem({ key: k, id: item._id, ...args });
+        await updateItem({
+          key: k,
+          id: item._id,
+          ...args,
+          photoId: photoId ?? (removePhoto ? null : undefined),
+        });
       } else {
-        await addItem({ key: k, ...args });
+        await addItem({ key: k, ...args, photoId });
       }
       onDone();
     } catch (err) {
@@ -142,6 +170,34 @@ function ItemForm({ k, item, onDone }: { k: string; item?: Item; onDone: () => v
             required
           />
         </div>
+      </div>
+      <div className="row" style={{ marginTop: 12 }}>
+        {preview && <img src={preview} alt="" className="item-photo" />}
+        <label className="photo-pick">
+          <Camera size={15} />
+          {preview ? "החלפת תמונה" : "הוספת תמונה"}
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null);
+              setRemovePhoto(false);
+            }}
+          />
+        </label>
+        {preview && (
+          <button
+            type="button"
+            className="hint-action"
+            onClick={() => {
+              setFile(null);
+              setRemovePhoto(true);
+            }}
+          >
+            הסרת תמונה
+          </button>
+        )}
       </div>
       {error && <div className="error" role="alert">{error}</div>}
       <div style={{ marginTop: 12 }}>

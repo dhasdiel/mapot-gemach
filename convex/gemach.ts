@@ -135,12 +135,33 @@ export const listItems = query({
   args: { key: v.string() },
   handler: async (ctx, args) => {
     checkKey(args.key);
-    return availableMap(ctx);
+    const items = await availableMap(ctx);
+    return Promise.all(
+      items.map(async (i) => ({
+        ...i,
+        photoUrl: i.photoId ? await ctx.storage.getUrl(i.photoId) : null,
+      }))
+    );
+  },
+});
+
+export const generateUploadUrl = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    return ctx.storage.generateUploadUrl();
   },
 });
 
 export const addItem = mutation({
-  args: { key: v.string(), name: v.string(), size: v.string(), color: v.string(), quantity: v.number() },
+  args: {
+    key: v.string(),
+    name: v.string(),
+    size: v.string(),
+    color: v.string(),
+    quantity: v.number(),
+    photoId: v.optional(v.id("_storage")),
+  },
   handler: async (ctx, args) => {
     checkKey(args.key);
     if (args.quantity < 1 || !Number.isInteger(args.quantity)) {
@@ -151,6 +172,7 @@ export const addItem = mutation({
       size: args.size.trim(),
       color: args.color.trim(),
       quantity: args.quantity,
+      photoId: args.photoId,
     });
   },
 });
@@ -163,6 +185,8 @@ export const updateItem = mutation({
     size: v.string(),
     color: v.string(),
     quantity: v.number(),
+    // null = remove the photo; undefined = keep the existing one
+    photoId: v.optional(v.union(v.id("_storage"), v.null())),
   },
   handler: async (ctx, args) => {
     checkKey(args.key);
@@ -180,11 +204,20 @@ export const updateItem = mutation({
     if (args.quantity < outOnLoan) {
       throw new ConvexError("quantity_below_loaned");
     }
+    const item = await ctx.db.get(args.id);
+    if (args.photoId !== undefined && item?.photoId) {
+      await ctx.storage.delete(item.photoId);
+    }
     await ctx.db.patch(args.id, {
       name: args.name.trim(),
       size: args.size.trim(),
       color: args.color.trim(),
       quantity: args.quantity,
+      ...(args.photoId === null
+        ? { photoId: undefined }
+        : args.photoId
+          ? { photoId: args.photoId }
+          : {}),
     });
   },
 });
@@ -203,6 +236,8 @@ export const removeItem = mutation({
     if (holders.length > 0) {
       throw new ConvexError(`item_on_loan:${[...new Set(holders)].join(", ")}`);
     }
+    const item = await ctx.db.get(args.id);
+    if (item?.photoId) await ctx.storage.delete(item.photoId);
     await ctx.db.delete(args.id);
   },
 });
