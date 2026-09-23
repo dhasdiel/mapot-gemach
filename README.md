@@ -21,6 +21,32 @@ App password is stored in the Convex deployment env var `APP_PASSWORD`:
 npx convex env set APP_PASSWORD <password>
 ```
 
+## MCP server (agent control)
+
+`mcp/server.mjs` exposes every gemach function as MCP tools over stdio
+(`list_people`, `add_item`, `create_loan`, `return_loan`, …), so an agent
+can operate the app. The password is injected server-side from
+`APP_PASSWORD` — agents never see it.
+
+Add it to the agent's MCP config (Claude Code / Desktop, Cursor, etc.):
+
+```json
+{
+  "mcpServers": {
+    "mapot-gemach": {
+      "command": "node",
+      "args": ["--env-file=.env.local", "mcp/server.mjs"],
+      "cwd": "/path/to/mapot-gemach",
+      "env": { "APP_PASSWORD": "<password>" }
+    }
+  }
+}
+```
+
+Or for Claude Code: `claude mcp add mapot-gemach --env APP_PASSWORD=<password> -- node --env-file=.env.local mcp/server.mjs`
+
+Check it works: `npm run mcp:check`
+
 ## Deploy
 
 ```bash
