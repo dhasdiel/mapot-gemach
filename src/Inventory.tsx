@@ -31,7 +31,7 @@ export default function Inventory({ k }: { k: string }) {
 
   return (
     <>
-      <div className="row spread">
+      <div className="row spread" style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>מלאי ({items.length})</h2>
         <button onClick={() => { setShowForm(!showForm); setEditId(null); }}>
           {showForm ? "ביטול" : "+ מפה חדשה"}
