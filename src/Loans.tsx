@@ -172,18 +172,21 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
     try {
       let borrowerName = name;
       let borrowerPhone = phone;
+      let borrowerId: Id<"people"> | undefined;
       if (isNew) {
-        await addPerson({ key: k, name, phone });
+        borrowerId = await addPerson({ key: k, name, phone });
       } else {
         const person = people?.find((p) => p._id === personId);
         if (!person) throw new Error("missing_name");
         borrowerName = person.name;
         borrowerPhone = person.phone;
+        borrowerId = person._id;
       }
       await createLoan({
         key: k,
         borrowerName,
         phone: borrowerPhone,
+        personId: borrowerId,
         items: selected,
         dueAt: new Date(due + "T12:00:00").getTime(),
         notes: notes || undefined,
@@ -207,6 +210,7 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
             {people.map((p) => (
               <option key={p._id} value={p._id}>
                 {p.name}
+                {p.visitor ? " (בא/ה לראות)" : ""}
               </option>
             ))}
             <option value="__new__">+ אדם חדש</option>

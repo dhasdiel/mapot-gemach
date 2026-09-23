@@ -48,24 +48,44 @@ export const listPeople = query({
 });
 
 export const addPerson = mutation({
-  args: { key: v.string(), name: v.string(), phone: v.string() },
+  args: {
+    key: v.string(),
+    name: v.string(),
+    phone: v.string(),
+    visitor: v.optional(v.boolean()),
+    notes: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     checkKey(args.key);
     if (!args.name.trim()) throw new ConvexError("missing_name");
     return ctx.db.insert("people", {
       name: args.name.trim(),
       phone: args.phone.trim(),
+      visitor: args.visitor,
+      notes: args.notes?.trim() || undefined,
       createdAt: Date.now(),
     });
   },
 });
 
 export const updatePerson = mutation({
-  args: { key: v.string(), id: v.id("people"), name: v.string(), phone: v.string() },
+  args: {
+    key: v.string(),
+    id: v.id("people"),
+    name: v.string(),
+    phone: v.string(),
+    visitor: v.optional(v.boolean()),
+    notes: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     checkKey(args.key);
     if (!args.name.trim()) throw new ConvexError("missing_name");
-    await ctx.db.patch(args.id, { name: args.name.trim(), phone: args.phone.trim() });
+    await ctx.db.patch(args.id, {
+      name: args.name.trim(),
+      phone: args.phone.trim(),
+      visitor: args.visitor,
+      notes: args.notes?.trim() || undefined,
+    });
   },
 });
 
@@ -164,14 +184,27 @@ export const createLoan = mutation({
     key: v.string(),
     borrowerName: v.string(),
     phone: v.string(),
+    personId: v.optional(v.id("people")),
     items: v.array(v.object({ itemId: v.id("items"), qty: v.number() })),
     dueAt: v.number(),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     checkKey(args.key);
-    if (!args.borrowerName.trim()) throw new ConvexError("missing_name");
     if (args.items.length === 0) throw new ConvexError("no_items");
+
+    // registered borrower: pull name/phone from the people record and clear
+    // their visitor flag — they're borrowing now
+    let borrowerName = args.borrowerName.trim();
+    let phone = args.phone.trim();
+    if (args.personId) {
+      const person = await ctx.db.get(args.personId);
+      if (!person) throw new ConvexError("person_not_found");
+      borrowerName = person.name;
+      phone = person.phone;
+      if (person.visitor) await ctx.db.patch(args.personId, { visitor: false });
+    }
+    if (!borrowerName) throw new ConvexError("missing_name");
 
     const avail = new Map((await availableMap(ctx)).map((i) => [i._id as string, i]));
     const lines = [];
@@ -183,8 +216,9 @@ export const createLoan = mutation({
       lines.push({ itemId, label: itemLabel(item), qty });
     }
     return ctx.db.insert("loans", {
-      borrowerName: args.borrowerName.trim(),
-      phone: args.phone.trim(),
+      borrowerName,
+      phone,
+      personId: args.personId,
       items: lines,
       borrowedAt: Date.now(),
       dueAt: args.dueAt,

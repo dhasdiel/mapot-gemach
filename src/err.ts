@@ -4,6 +4,7 @@ const ERRORS: Record<string, string> = {
   item_on_loan: "לא ניתן למחוק — המפה מושאלת כרגע",
   quantity_below_loaned: "הכמות קטנה מהכמות שמושאלת כרגע",
   missing_name: "חסר שם השואל/ת",
+  person_not_found: "האדם לא נמצא",
   no_items: "לא נבחרו מפות",
   invalid_quantity: "כמות לא תקינה",
   item_not_found: "המפה לא נמצאה",
