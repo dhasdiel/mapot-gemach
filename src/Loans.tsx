@@ -146,7 +146,10 @@ export function LoanCard({
 
 function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
   const items = useQuery(api.gemach.listItems, { key: k });
+  const people = useQuery(api.gemach.listPeople, { key: k });
   const createLoan = useMutation(api.gemach.createLoan);
+  const addPerson = useMutation(api.gemach.addPerson);
+  const [personId, setPersonId] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [due, setDue] = useState(() => new Date(Date.now() + 7 * DAY).toISOString().slice(0, 10));
@@ -155,7 +158,9 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (!items) return null;
+  if (!items || !people) return null;
+
+  const isNew = personId === "__new__";
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -165,10 +170,20 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
     setBusy(true);
     setError("");
     try {
+      let borrowerName = name;
+      let borrowerPhone = phone;
+      if (isNew) {
+        await addPerson({ key: k, name, phone });
+      } else {
+        const person = people?.find((p) => p._id === personId);
+        if (!person) throw new Error("missing_name");
+        borrowerName = person.name;
+        borrowerPhone = person.phone;
+      }
       await createLoan({
         key: k,
-        borrowerName: name,
-        phone,
+        borrowerName,
+        phone: borrowerPhone,
         items: selected,
         dueAt: new Date(due + "T12:00:00").getTime(),
         notes: notes || undefined,
@@ -184,13 +199,31 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
     <form className="card" onSubmit={submit}>
       <div className="row" style={{ gap: 12 }}>
         <div style={{ flex: 1, minWidth: 140 }}>
-          <label>שם</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
+          <label>שואל/ת</label>
+          <select value={personId} onChange={(e) => setPersonId(e.target.value)} required>
+            <option value="" disabled>
+              בחרי…
+            </option>
+            {people.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.name}
+              </option>
+            ))}
+            <option value="__new__">+ אדם חדש</option>
+          </select>
         </div>
-        <div style={{ flex: 1, minWidth: 140 }}>
-          <label>טלפון</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
-        </div>
+        {isNew && (
+          <>
+            <div style={{ flex: 1, minWidth: 140 }}>
+              <label>שם</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} required />
+            </div>
+            <div style={{ flex: 1, minWidth: 140 }}>
+              <label>טלפון</label>
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
+            </div>
+          </>
+        )}
         <div style={{ minWidth: 150 }}>
           <label>תאריך החזרה</label>
           <input type="date" value={due} onChange={(e) => setDue(e.target.value)} required />

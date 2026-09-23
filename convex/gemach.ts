@@ -38,6 +38,45 @@ export const ping = query({
   },
 });
 
+export const listPeople = query({
+  args: { key: v.string() },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    const people = await ctx.db.query("people").collect();
+    return people.sort((a, b) => a.name.localeCompare(b.name, "he"));
+  },
+});
+
+export const addPerson = mutation({
+  args: { key: v.string(), name: v.string(), phone: v.string() },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    if (!args.name.trim()) throw new ConvexError("missing_name");
+    return ctx.db.insert("people", {
+      name: args.name.trim(),
+      phone: args.phone.trim(),
+      createdAt: Date.now(),
+    });
+  },
+});
+
+export const updatePerson = mutation({
+  args: { key: v.string(), id: v.id("people"), name: v.string(), phone: v.string() },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    if (!args.name.trim()) throw new ConvexError("missing_name");
+    await ctx.db.patch(args.id, { name: args.name.trim(), phone: args.phone.trim() });
+  },
+});
+
+export const removePerson = mutation({
+  args: { key: v.string(), id: v.id("people") },
+  handler: async (ctx, args) => {
+    checkKey(args.key);
+    await ctx.db.delete(args.id);
+  },
+});
+
 export const listItems = query({
   args: { key: v.string() },
   handler: async (ctx, args) => {

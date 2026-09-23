@@ -2,6 +2,11 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  people: defineTable({
+    name: v.string(),
+    phone: v.string(),
+    createdAt: v.number(),
+  }),
   items: defineTable({
     name: v.string(),
     size: v.string(),
