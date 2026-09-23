@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { Camera, Image as ImageIcon } from "lucide-react";
+import { Camera, Copy, Image as ImageIcon } from "lucide-react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
@@ -14,6 +14,7 @@ export default function Inventory({ k }: { k: string }) {
   const removeItem = useMutation(api.gemach.removeItem);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<Id<"items"> | null>(null);
+  const [copyFrom, setCopyFrom] = useState<Item | null>(null);
   const [error, setError] = useState("");
 
   if (!items) return <div className="empty">טוען…</div>;
@@ -33,13 +34,19 @@ export default function Inventory({ k }: { k: string }) {
     <>
       <div className="row spread" style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>מלאי ({items.length})</h2>
-        <button onClick={() => { setShowForm(!showForm); setEditId(null); }}>
+        <button onClick={() => { setShowForm(!showForm); setEditId(null); setCopyFrom(null); }}>
           {showForm ? "ביטול" : "+ מפה חדשה"}
         </button>
       </div>
       {error && <div className="error" role="alert">{error}</div>}
 
-      {showForm && <ItemForm k={k} onDone={() => setShowForm(false)} />}
+      {showForm && (
+        <ItemForm
+          k={k}
+          prefill={copyFrom ?? undefined}
+          onDone={() => { setShowForm(false); setCopyFrom(null); }}
+        />
+      )}
       {items.length === 0 && !showForm && <div className="empty">המלאי ריק</div>}
 
       {items.map((item) =>
@@ -62,6 +69,14 @@ export default function Inventory({ k }: { k: string }) {
               </div>
             )}
             <div className="row" style={{ marginTop: 8, justifyContent: "flex-end" }}>
+              <button
+                className="secondary"
+                onClick={() => { setCopyFrom(item); setShowForm(true); setEditId(null); }}
+                aria-label={`שכפול ${item.name}`}
+              >
+                <Copy size={15} />
+                שכפול
+              </button>
               <button
                 className="secondary"
                 onClick={() => { setEditId(item._id); setShowForm(false); }}
@@ -92,14 +107,25 @@ export default function Inventory({ k }: { k: string }) {
   );
 }
 
-function ItemForm({ k, item, onDone }: { k: string; item?: Item; onDone: () => void }) {
+function ItemForm({
+  k,
+  item,
+  prefill,
+  onDone,
+}: {
+  k: string;
+  item?: Item;
+  prefill?: Item; // שכפול — fields copied, but it saves as a NEW item (no photo copy)
+  onDone: () => void;
+}) {
   const addItem = useMutation(api.gemach.addItem);
   const updateItem = useMutation(api.gemach.updateItem);
   const generateUploadUrl = useMutation(api.gemach.generateUploadUrl);
-  const [name, setName] = useState(item?.name ?? "");
-  const [size, setSize] = useState(item?.size ?? "");
-  const [color, setColor] = useState(item?.color ?? "");
-  const [quantity, setQuantity] = useState(item?.quantity ?? 1);
+  const src = item ?? prefill;
+  const [name, setName] = useState(src?.name ?? "");
+  const [size, setSize] = useState(src?.size ?? "");
+  const [color, setColor] = useState(src?.color ?? "");
+  const [quantity, setQuantity] = useState(item ? item.quantity : 1);
   const [file, setFile] = useState<File | null>(null);
   const [removePhoto, setRemovePhoto] = useState(false);
   const [error, setError] = useState("");

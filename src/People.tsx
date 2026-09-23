@@ -5,13 +5,16 @@ import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
 import { MessageCircle, Phone } from "lucide-react";
+import { fmtDate } from "./Loans";
 import { waLink } from "./contact";
 
 export default function People({ k }: { k: string }) {
   const people = useQuery(api.gemach.listPeople, { key: k });
+  const loans = useQuery(api.gemach.listLoans, { key: k });
   const removePerson = useMutation(api.gemach.removePerson);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<Id<"people"> | null>(null);
+  const [histId, setHistId] = useState<Id<"people"> | null>(null);
   const [error, setError] = useState("");
 
   if (!people) return <div className="empty">טוען…</div>;
@@ -58,6 +61,42 @@ export default function People({ k }: { k: string }) {
           </div>
         </div>
         {person.notes && <div className="muted" style={{ marginTop: 4 }}>{person.notes}</div>}
+        {(() => {
+          const mine = (loans ?? []).filter(
+            (l) => l.personId === person._id || (!l.personId && l.borrowerName === person.name)
+          );
+          if (mine.length === 0) return null;
+          return (
+            <>
+              <button
+                className="hint-action"
+                style={{ marginTop: 6 }}
+                onClick={() => setHistId(histId === person._id ? null : person._id)}
+              >
+                היסטוריה ({mine.length})
+              </button>
+              {histId === person._id &&
+                mine.map((l) => (
+                  <div key={l._id} className="muted" style={{ marginTop: 4 }}>
+                    {fmtDate(l.borrowedAt)} ← {fmtDate(l.dueAt)} —{" "}
+                    {l.items.map((i) => `${i.label} ×${i.qty}`).join(" · ")}{" "}
+                    <span
+                      className={
+                        "badge " +
+                        (l.returnedAt !== undefined ? "ok" : l.dueAt < Date.now() ? "late" : "warn")
+                      }
+                    >
+                      {l.returnedAt !== undefined
+                        ? "הוחזר"
+                        : l.dueAt < Date.now()
+                          ? "באיחור"
+                          : "פעילה"}
+                    </span>
+                  </div>
+                ))}
+            </>
+          );
+        })()}
         <div className="row" style={{ marginTop: 8, justifyContent: "flex-end" }}>
           <button
             className="secondary"

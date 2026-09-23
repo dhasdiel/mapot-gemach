@@ -1,5 +1,7 @@
 import { HebrewCalendar, HDate, flags } from "@hebcal/core";
 
+const DAY = 86400000;
+
 const KEEP =
   flags.CHAG | flags.MINOR_HOLIDAY | flags.ROSH_CHODESH | flags.MODERN_HOLIDAY | flags.EREV;
 // strip nikud/cantillation — hebcal renders vocalized text, too busy for small cells
@@ -54,4 +56,27 @@ export function hebrewMonthYear(date: Date): string {
 export function dayHolidays(date: Date): string[] {
   const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
   return holidaysForRange(date, end).get(dayKey(date.getTime())) ?? [];
+}
+
+/** first weekday after the current/next chag run ends (incl. chol hamoed);
+ *  lands on Sunday when it would fall on Shabbat. null if no chag within 60d */
+export function afterNextChag(from: Date): Date | null {
+  const end = new Date(from);
+  end.setDate(end.getDate() + 60);
+  const events = HebrewCalendar.calendar({ start: from, end, il: true, sedrot: false, omer: false });
+  const chag = new Set<number>(); // day-start timestamps
+  for (const ev of events) {
+    if (ev.getFlags() & (flags.CHAG | flags.CHOL_HAMOED)) {
+      const g = ev.getDate().greg();
+      chag.add(new Date(g.getFullYear(), g.getMonth(), g.getDate()).getTime());
+    }
+  }
+  const today0 = new Date(from).setHours(0, 0, 0, 0);
+  const first = [...chag].filter((t) => t >= today0).sort((a, b) => a - b)[0];
+  if (first === undefined) return null;
+  let d = first;
+  while (chag.has(d)) d += DAY;
+  const out = new Date(d);
+  if (out.getDay() === 6) out.setDate(out.getDate() + 1);
+  return out;
 }
