@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
-import { dayHolidays, hebrewDateShort } from "./hebrew";
+import { afterNextChag, dayHolidays, hebrewDateShort } from "./hebrew";
 import { CalendarPlus, Check, MessageCircle, Phone, RotateCcw, Trash2 } from "lucide-react";
 import { waLink } from "./contact";
 
 const DAY = 86400000;
 
-function fmtDate(ts: number) {
+export function fmtDate(ts: number) {
   return new Date(ts).toLocaleDateString("he-IL", { day: "numeric", month: "numeric" });
 }
 
@@ -50,6 +50,9 @@ export default function Loans({ k }: { k: string }) {
   const returned = loans.filter((l) => l.returnedAt !== undefined);
   const overdue = active.filter((l) => l.dueAt < Date.now());
   const upcoming = active.filter((l) => l.dueAt >= Date.now());
+  const dayStart = new Date().setHours(0, 0, 0, 0);
+  const dueToday = active.filter((l) => l.dueAt >= dayStart && l.dueAt < dayStart + DAY).length;
+  const dueWeek = active.filter((l) => l.dueAt >= dayStart + DAY && l.dueAt < dayStart + 7 * DAY).length;
 
   async function act(fn: () => Promise<unknown>, done?: (result: unknown) => string) {
     try {
@@ -96,6 +99,12 @@ export default function Loans({ k }: { k: string }) {
 
       {showForm && <NewLoan k={k} onDone={() => setShowForm(false)} />}
       {error && <div className="error" role="alert">{error}</div>}
+
+      {(dueToday > 0 || dueWeek > 0) && (
+        <div className="today-strip">
+          היום צפויות {dueToday} החזרות · בשבוע הקרוב {dueWeek}
+        </div>
+      )}
       {notice && (
         <div className="notice" role="status">
           {notice.text}
@@ -270,6 +279,7 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
   const [qty, setQty] = useState<Record<string, number>>({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const chagEnd = useMemo(() => afterNextChag(new Date()), []);
 
   if (!items || !people) {
     return (
@@ -378,6 +388,27 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
             onChange={(e) => setDue(e.target.value)}
             required
           />
+          <div className="row" style={{ gap: 6, marginTop: 6 }}>
+            {[7, 14].map((d) => (
+              <button
+                key={d}
+                type="button"
+                className="btn-sm secondary"
+                onClick={() => setDue(new Date(Date.now() + d * DAY).toISOString().slice(0, 10))}
+              >
+                {d === 7 ? "שבוע" : "שבועיים"}
+              </button>
+            ))}
+            {chagEnd && (
+              <button
+                type="button"
+                className="btn-sm secondary"
+                onClick={() => setDue(chagEnd.toISOString().slice(0, 10))}
+              >
+                אחרי החג
+              </button>
+            )}
+          </div>
           {due && (
             <div className={"hint" + (isShabbat || dueHolidays.length > 0 ? " warn" : "")}>
               {hebrewDateShort(dueDate.getTime())}
@@ -412,8 +443,11 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
         const itemDesc = [item.name, item.size, item.color].filter(Boolean).join(" · ");
         return (
           <div key={item._id} className="row spread" style={{ padding: "6px 0" }}>
-            <span>
-              {itemDesc} <span className="muted">(זמין {item.available})</span>
+            <span className="row" style={{ flexWrap: "nowrap" }}>
+              {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo sm" />}
+              <span>
+                {itemDesc} <span className="muted">(זמין {item.available})</span>
+              </span>
             </span>
             <span className="qty-input">
               <button

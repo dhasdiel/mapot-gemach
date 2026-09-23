@@ -390,6 +390,21 @@ label,
   border: 1px solid #e6e0d6;
 }
 
+.item-photo.sm {
+  width: 44px;
+  height: 44px;
+}
+
+.today-strip {
+  background: #f3ede3;
+  color: #5c544a;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .photo-pick {
   display: inline-flex;
   align-items: center;
