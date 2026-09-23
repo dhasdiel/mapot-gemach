@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
+import { hebrewDateShort } from "./hebrew";
 
 const DAY = 86400000;
 
@@ -124,7 +125,7 @@ export function LoanCard({
             </>
           )}
           <span className="muted">
-            {fmtDate(loan.borrowedAt)} ← {fmtDate(loan.dueAt)}
+            {fmtDate(loan.borrowedAt)} ← {fmtDate(loan.dueAt)} ({hebrewDateShort(loan.dueAt)})
           </span>
         </div>
         <div className="row">

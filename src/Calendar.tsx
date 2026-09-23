@@ -1,16 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc } from "../convex/_generated/dataModel";
 import { LoanCard } from "./Loans";
 import { errMsg } from "./err";
+import { dayKey, hebrewDateShort, hebrewDayLabel, holidaysForRange } from "./hebrew";
 
 const DOW = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
-
-function dayKey(ts: number) {
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
 
 export default function Calendar({ k }: { k: string }) {
   const loans = useQuery(api.gemach.listLoans, { key: k });
@@ -22,6 +18,11 @@ export default function Calendar({ k }: { k: string }) {
   });
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState("");
+
+  const holidays = useMemo(
+    () => holidaysForRange(month, new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59)),
+    [month]
+  );
 
   if (!loans) return <div className="empty">טוען…</div>;
 
@@ -43,6 +44,7 @@ export default function Calendar({ k }: { k: string }) {
   const todayKey = dayKey(Date.now());
   const monthLabel = first.toLocaleDateString("he-IL", { month: "long", year: "numeric" });
   const selectedLoans = selected ? (byDay.get(selected) ?? []) : [];
+  const hasContent = (key: string) => (byDay.get(key)?.length ?? 0) + (holidays.get(key)?.length ?? 0) > 0;
 
   async function act(fn: () => Promise<unknown>) {
     try {
@@ -73,19 +75,26 @@ export default function Calendar({ k }: { k: string }) {
           if (!date) return <div key={i} />;
           const key = dayKey(date.getTime());
           const dayLoans = byDay.get(key) ?? [];
-          const isToday = key === todayKey;
+          const dayHolidays = holidays.get(key) ?? [];
           return (
             <div
               key={i}
               className={
                 "cal-cell" +
-                (isToday ? " today" : "") +
+                (key === todayKey ? " today" : "") +
+                (date.getDay() === 6 ? " shabbat" : "") +
                 (selected === key ? " selected" : "") +
-                (dayLoans.length ? " clickable" : "")
+                (hasContent(key) ? " clickable" : "")
               }
-              onClick={() => dayLoans.length && setSelected(selected === key ? null : key)}
+              onClick={() => hasContent(key) && setSelected(selected === key ? null : key)}
             >
-              <span className="cal-num">{date.getDate()}</span>
+              <div className="row spread">
+                <span className="cal-num">{date.getDate()}</span>
+                <span className="cal-hday">{hebrewDayLabel(date)}</span>
+              </div>
+              {dayHolidays.map((h) => (
+                <span key={h} className="cal-chip holiday">{h}</span>
+              ))}
               {dayLoans.map((l) => (
                 <span key={l._id} className={"cal-chip" + (l.dueAt < Date.now() ? " late" : "")}>
                   {l.borrowerName}
@@ -97,9 +106,18 @@ export default function Calendar({ k }: { k: string }) {
       </div>
       {error && <div className="error">{error}</div>}
 
-      {selected && selectedLoans.length > 0 && (
+      {selected && (
         <>
-          <h2>להחזרה ב-{new Date(selectedLoans[0].dueAt).toLocaleDateString("he-IL")}</h2>
+          <h2>
+            {(() => {
+              const [y, m, d] = selected.split("-").map(Number);
+              const date = new Date(y, m, d);
+              return date.toLocaleDateString("he-IL") + " · " + hebrewDateShort(date.getTime());
+            })()}
+          </h2>
+          {(holidays.get(selected) ?? []).map((h) => (
+            <div key={h} className="card"><span className="badge warn">{h}</span></div>
+          ))}
           {selectedLoans.map((loan) => (
             <LoanCard
               key={loan._id}

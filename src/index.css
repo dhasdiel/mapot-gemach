@@ -203,9 +203,20 @@ label {
   cursor: pointer;
 }
 
+.cal-cell.shabbat {
+  background: #faf7f0;
+}
+
 .cal-num {
   font-weight: 600;
   font-size: 0.75rem;
+}
+
+.cal-hday {
+  font-size: 0.65rem;
+  color: #a89e8e;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .cal-chip {
@@ -224,6 +235,11 @@ label {
 .cal-chip.late {
   background: #fbe4e2;
   color: #b3261e;
+}
+
+.cal-chip.holiday {
+  background: #f4ead5;
+  color: #8a5a00;
 }
 
 .login {
