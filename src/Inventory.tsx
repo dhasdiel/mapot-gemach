@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { Camera, Copy, Download, Image as ImageIcon } from "lucide-react";
+import { Camera, Copy, Download, Image as ImageIcon, Search, Users } from "lucide-react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { downloadCsv } from "./csv";
@@ -18,9 +18,18 @@ export default function Inventory({ k }: { k: string }) {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<Id<"items"> | null>(null);
   const [copyFrom, setCopyFrom] = useState<Item | null>(null);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"all" | "in" | "out">("all");
   const [error, setError] = useState("");
 
   if (!items) return <div className="empty">טוען…</div>;
+
+  const q = query.trim();
+  const filtered = items.filter(
+    (i) =>
+      (filter === "all" || (filter === "in" ? i.available > 0 : i.available === 0)) &&
+      (!q || [i.name, i.size, i.color].filter(Boolean).join(" ").includes(q))
+  );
 
   // "who has my big white cloth?" — itemId → borrowers holding it right now
   const holders = new Map<string, string[]>();
@@ -35,11 +44,11 @@ export default function Inventory({ k }: { k: string }) {
 
   return (
     <>
-      <div className="row spread" style={{ marginBottom: 10 }}>
-        <h2 style={{ margin: 0 }}>מלאי ({items.length})</h2>
+      <div className="section-head">
+        <h2>מלאי ({items.length})</h2>
         <span className="row">
           <button
-            className="secondary"
+            className="icon-btn stone"
             aria-label="ייצוא מלאי ל-CSV"
             onClick={() =>
               downloadCsv("mapot-inventory.csv", [
@@ -64,29 +73,70 @@ export default function Inventory({ k }: { k: string }) {
           onDone={() => { setShowForm(false); setCopyFrom(null); }}
         />
       )}
-      {items.length === 0 && !showForm && <div className="empty">המלאי ריק</div>}
+      {items.length > 3 && (
+        <div className="search">
+          <Search size={16} />
+          <input
+            type="search"
+            placeholder="חיפוש מפה לפי מידה, צבע או סוג…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      )}
+      {items.length > 3 && (
+        <div className="chips" role="group" aria-label="סינון מלאי">
+          {(
+            [
+              ["all", `הכל (${items.length})`],
+              ["in", `זמין עכשיו (${items.filter((i) => i.available > 0).length})`],
+              ["out", `אזל (${items.filter((i) => i.available === 0).length})`],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              className={"chip" + (filter === id ? " on" : "")}
+              aria-pressed={filter === id}
+              onClick={() => setFilter(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {items.map((item) =>
+      {items.length === 0 && !showForm && <div className="empty">המלאי ריק</div>}
+      {filtered.length === 0 && items.length > 0 && <div className="empty">אין מפות שמתאימות לחיפוש</div>}
+
+      {filtered.map((item) =>
         editId === item._id ? (
           <ItemForm key={item._id} k={k} item={item} onDone={() => setEditId(null)} />
         ) : (
           <div key={item._id} className="card">
-            <div className="row spread">
-              <span className="row" style={{ flexWrap: "nowrap" }}>
-                {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo" />}
-                <strong>{[item.name, item.size, item.color].filter(Boolean).join(" · ")}</strong>
-              </span>
-              <span className={"badge " + (item.available > 0 ? "ok" : "late")}>
-                זמין {item.available} מתוך {item.quantity}
-              </span>
+            <div className="media-card">
+              {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo" />}
+              <div className="media-body">
+                <div className="row spread" style={{ alignItems: "flex-start" }}>
+                  <strong>{[item.name, item.size, item.color].filter(Boolean).join(" · ")}</strong>
+                  <span className={"badge " + (item.available > 0 ? "ok" : "late")}>
+                    זמין {item.available} מתוך {item.quantity}
+                  </span>
+                </div>
+              </div>
             </div>
             {(holders.get(item._id)?.length ?? 0) > 0 && (
-              <div className="muted" style={{ marginTop: 6 }}>
-                כרגע אצל: {holders.get(item._id)!.join(" · ")}
+              <div className="meta-box">
+                <div className="mb-row">
+                  <Users size={14} />
+                  <span>
+                    <strong style={{ color: "#2d2a26" }}>כרגע אצל:</strong>{" "}
+                    {holders.get(item._id)!.join(" · ")}
+                  </span>
+                </div>
               </div>
             )}
             {(waitlist ?? []).filter((w) => w.itemId === item._id).length > 0 && (
-              <div className="hint" style={{ marginTop: 4 }}>
+              <div className="warn-box">
                 ממתינים:{" "}
                 {(waitlist ?? [])
                   .filter((w) => w.itemId === item._id)
@@ -110,9 +160,9 @@ export default function Inventory({ k }: { k: string }) {
                   ))}
               </div>
             )}
-            <div className="row" style={{ marginTop: 8, justifyContent: "flex-end" }}>
+            <div className="card-actions">
               <button
-                className="secondary"
+                className="secondary grow"
                 onClick={() => { setCopyFrom(item); setShowForm(true); setEditId(null); }}
                 aria-label={`שכפול ${item.name}`}
               >
@@ -120,7 +170,7 @@ export default function Inventory({ k }: { k: string }) {
                 שכפול
               </button>
               <button
-                className="secondary"
+                className="secondary grow"
                 onClick={() => { setEditId(item._id); setShowForm(false); }}
                 aria-label={`עריכת ${item.name}`}
               >

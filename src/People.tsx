@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
-import { Download, MessageCircle, Phone } from "lucide-react";
+import { Clock, Download, MessageCircle, Phone, Search } from "lucide-react";
 import { fmtDate } from "./Loans";
 import { waLink } from "./contact";
 import { downloadCsv } from "./csv";
@@ -16,12 +16,17 @@ export default function People({ k }: { k: string }) {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<Id<"people"> | null>(null);
   const [histId, setHistId] = useState<Id<"people"> | null>(null);
+  const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
   if (!people) return <div className="empty">טוען…</div>;
 
-  const visitors = people.filter((p) => p.visitor);
-  const regular = people.filter((p) => !p.visitor);
+  const q = query.trim();
+  const filtered = q
+    ? people.filter((p) => p.name.includes(q) || p.phone.includes(q) || (p.notes ?? "").includes(q))
+    : people;
+  const visitors = filtered.filter((p) => p.visitor);
+  const regular = filtered.filter((p) => !p.visitor);
 
   async function remove(person: Doc<"people">) {
     if (!confirm(`למחוק את ${person.name}?`)) return;
@@ -39,17 +44,17 @@ export default function People({ k }: { k: string }) {
     }
     return (
       <div key={person._id} className="card">
-        <div className="row spread">
-          <span>
+        <div className="loan-head">
+          <div>
             <strong>{person.name}</strong>{" "}
             {person.visitor && <span className="badge warn">בא/ה לראות</span>}
-          </span>
+          </div>
           <div className="contact-links">
             {person.phone && (
               <>
                 <a href={`tel:${person.phone}`}>
                   <Phone size={14} />
-                  {person.phone}
+                  <span dir="ltr">{person.phone}</span>
                 </a>
                 {waLink(person.phone) && (
                   <a href={waLink(person.phone)!} target="_blank" rel="noreferrer">
@@ -61,7 +66,7 @@ export default function People({ k }: { k: string }) {
             )}
           </div>
         </div>
-        {person.notes && <div className="muted" style={{ marginTop: 4 }}>{person.notes}</div>}
+        {person.notes && <div className="muted" style={{ marginTop: 8 }}>{person.notes}</div>}
         {(() => {
           const mine = (loans ?? []).filter(
             (l) => l.personId === person._id || (!l.personId && l.borrowerName === person.name)
@@ -71,36 +76,42 @@ export default function People({ k }: { k: string }) {
             <>
               <button
                 className="hint-action"
-                style={{ marginTop: 6 }}
+                style={{ marginTop: 8 }}
                 onClick={() => setHistId(histId === person._id ? null : person._id)}
               >
                 היסטוריה ({mine.length})
               </button>
-              {histId === person._id &&
-                mine.map((l) => (
-                  <div key={l._id} className="muted" style={{ marginTop: 4 }}>
-                    {fmtDate(l.borrowedAt)} ← {fmtDate(l.dueAt)} —{" "}
-                    {l.items.map((i) => `${i.label} ×${i.qty}`).join(" · ")}{" "}
-                    <span
-                      className={
-                        "badge " +
-                        (l.returnedAt !== undefined ? "ok" : l.dueAt < Date.now() ? "late" : "warn")
-                      }
-                    >
-                      {l.returnedAt !== undefined
-                        ? "הוחזר"
-                        : l.dueAt < Date.now()
-                          ? "באיחור"
-                          : "פעילה"}
-                    </span>
-                  </div>
-                ))}
+              {histId === person._id && (
+                <div className="item-rows">
+                  {mine.map((l) => (
+                    <div key={l._id} className="item-row" style={{ fontSize: "0.85rem" }}>
+                      <span className="item-name" style={{ color: "#6f665a" }}>
+                        <Clock size={14} />
+                        {fmtDate(l.borrowedAt)} ← {fmtDate(l.dueAt)} —{" "}
+                        {l.items.map((i) => `${i.label} ×${i.qty}`).join(" · ")}
+                      </span>
+                      <span
+                        className={
+                          "badge " +
+                          (l.returnedAt !== undefined ? "ok" : l.dueAt < Date.now() ? "late" : "warn")
+                        }
+                      >
+                        {l.returnedAt !== undefined
+                          ? "הוחזר"
+                          : l.dueAt < Date.now()
+                            ? "באיחור"
+                            : "פעילה"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           );
         })()}
-        <div className="row" style={{ marginTop: 8, justifyContent: "flex-end" }}>
+        <div className="card-actions">
           <button
-            className="secondary"
+            className="secondary grow"
             onClick={() => { setEditId(person._id); setShowForm(false); }}
             aria-label={`עריכת ${person.name}`}
           >
@@ -120,11 +131,11 @@ export default function People({ k }: { k: string }) {
 
   return (
     <>
-      <div className="row spread" style={{ marginBottom: 10 }}>
-        <h2 style={{ margin: 0 }}>אנשים ({people.length})</h2>
+      <div className="section-head">
+        <h2>אנשים ({people.length})</h2>
         <span className="row">
           <button
-            className="secondary"
+            className="icon-btn stone"
             aria-label="ייצוא אנשים ל-CSV"
             onClick={() =>
               downloadCsv("mapot-people.csv", [
@@ -142,10 +153,22 @@ export default function People({ k }: { k: string }) {
       </div>
       {error && <div className="error" role="alert">{error}</div>}
 
+      {people.length > 4 && (
+        <div className="search">
+          <Search size={16} />
+          <input
+            type="search"
+            placeholder="חיפוש לפי שם או טלפון…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      )}
       {showForm && <PersonForm k={k} onDone={() => setShowForm(false)} />}
       {people.length === 0 && !showForm && (
         <div className="empty">אין אנשים רשומים — הוסיפי אדם לפני השאלה ראשונה</div>
       )}
+      {q && filtered.length === 0 && <div className="empty">לא נמצאו אנשים עבור ״{q}״</div>}
 
       {visitors.length > 0 && (
         <>
