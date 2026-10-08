@@ -11,7 +11,7 @@ export default function Catalog() {
 
   return (
     <>
-      <h1>גמ״ח מפות</h1>
+      <h1 style={{ color: "#6d5c44" }}>גמ״ח מפות</h1>
       <p className="muted" style={{ marginTop: -8 }}>
         מלאי מפות להשאלה — בחינם, לשבוע
       </p>
@@ -19,18 +19,23 @@ export default function Catalog() {
       {items?.length === 0 && <div className="empty">אין מפות במלאי כרגע</div>}
       {items?.map((item) => (
         <div key={item._id} className="card">
-          <div className="row spread">
-            <span className="row" style={{ flexWrap: "nowrap" }}>
-              {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo" />}
-              <strong>{[item.name, item.size, item.color].filter(Boolean).join(" · ")}</strong>
-            </span>
-            <span className={"badge " + (item.available > 0 ? "ok" : "late")}>
-              {item.available > 0 ? `זמין ${item.available}` : "אזל"}
-            </span>
+          <div className="media-card">
+            {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo" />}
+            <div className="media-body">
+              <div className="row spread" style={{ alignItems: "flex-start" }}>
+                <strong>{[item.name, item.size, item.color].filter(Boolean).join(" · ")}</strong>
+                <span className={"badge " + (item.available > 0 ? "ok" : "late")}>
+                  {item.available > 0 ? `זמין ${item.available}` : "אזל"}
+                </span>
+              </div>
+            </div>
           </div>
           {item.available === 0 && <WaitForm itemId={item._id} />}
         </div>
       ))}
+      <footer className="catalog-foot">
+        לשאלות והזמנות — כתבי לנו בוואטסאפ
+      </footer>
     </>
   );
 }
@@ -45,7 +50,7 @@ function WaitForm({ itemId }: { itemId: Id<"items"> }) {
 
   if (done) {
     return (
-      <div className="notice" style={{ marginTop: 8, marginBottom: 0 }}>
+      <div className="notice" style={{ marginTop: 10, marginBottom: 0 }}>
         ✓ נרשמת — נעדכן כשיחזור
       </div>
     );
@@ -66,9 +71,9 @@ function WaitForm({ itemId }: { itemId: Id<"items"> }) {
   }
 
   return (
-    <form onSubmit={submit} style={{ marginTop: 8 }}>
-      <div className="hint">אזל — השאירי פרטים ונעדכן כשיחזור:</div>
-      <div className="row" style={{ gap: 8, marginTop: 6 }}>
+    <form onSubmit={submit} className="warn-box">
+      <div>אזל — השאירי פרטים ונעדכן כשיחזור:</div>
+      <div className="row" style={{ gap: 8, marginTop: 8 }}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}

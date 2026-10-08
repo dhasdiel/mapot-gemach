@@ -5,7 +5,7 @@ import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
 import { errMsg } from "./err";
 import { afterNextChag, dayHolidays, hebrewDateShort } from "./hebrew";
-import { CalendarPlus, Check, Download, MessageCircle, Phone, RotateCcw, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarPlus, Check, Clock, Download, MessageCircle, Phone, RotateCcw, Table2, Trash2 } from "lucide-react";
 import { waLink } from "./contact";
 import { downloadCsv } from "./csv";
 
@@ -95,11 +95,11 @@ export default function Loans({ k }: { k: string }) {
 
   return (
     <>
-      <div className="row spread" style={{ marginBottom: 10 }}>
-        <h2 style={{ margin: 0 }}>השאלות פעילות ({active.length})</h2>
+      <div className="section-head">
+        <h2>השאלות פעילות ({active.length})</h2>
         <span className="row">
           <button
-            className="secondary"
+            className="icon-btn stone"
             aria-label="ייצוא השאלות ל-CSV"
             onClick={() =>
               downloadCsv("mapot-loans.csv", [
@@ -197,23 +197,32 @@ export function LoanCard({
   const wa = waLink(loan.phone, reminderText(loan));
   return (
     <div className={"card" + (overdue ? " overdue" : "")}>
-      <div className="row spread">
-        <strong>{loan.borrowerName}</strong>
+      <div className="loan-head">
+        <div>
+          <strong>{loan.borrowerName}</strong>
+          <div className="loan-dates">
+            <Clock size={14} />
+            {fmtDate(loan.borrowedAt)} ← {fmtDate(loan.dueAt)} · {hebrewDateShort(loan.dueAt)}
+          </div>
+        </div>
         {loan.returnedAt === undefined ? (
           dueBadge(loan.dueAt)
         ) : (
           <span className="muted">הוחזר {fmtDate(loan.returnedAt)}</span>
         )}
       </div>
-      <div style={{ marginTop: 4 }}>
+      <div className="item-rows">
         {loan.items.map((i) => {
           const back = i.returnedQty ?? 0;
           const remaining = i.qty - back;
           return (
-            <div key={i.itemId} className="row spread item-line">
-              <span className="muted">
-                {i.label} ×{i.qty}
-                {back > 0 && back < i.qty && ` — חזרו ${back}`}
+            <div key={i.itemId} className="item-row">
+              <span className="item-name">
+                <Table2 size={17} style={{ color: "#6d5c44", flexShrink: 0 }} />
+                <span>
+                  {i.label} ×{i.qty}
+                  {back > 0 && back < i.qty && ` — חזרו ${back}`}
+                </span>
               </span>
               {onReturnItem && remaining > 0 && (
                 <button
@@ -221,6 +230,7 @@ export function LoanCard({
                   onClick={() => onReturnItem(i.itemId)}
                   aria-label={`החזרת יחידה של ${i.label} מהשאלת ${loan.borrowerName}`}
                 >
+                  <Check size={14} />
                   החזרה
                 </button>
               )}
@@ -228,68 +238,61 @@ export function LoanCard({
           );
         })}
       </div>
-      <div className="row spread" style={{ marginTop: 8 }}>
-        <div className="contact-links">
-          {loan.phone && (
-            <>
-              <a href={`tel:${loan.phone}`}>
-                <Phone size={14} />
-                {loan.phone}
-              </a>
-              {wa && (
-                <a href={wa} target="_blank" rel="noreferrer">
-                  <MessageCircle size={14} />
-                  וואטסאפ
-                </a>
-              )}
-            </>
+      {loan.phone && (
+        <div className="contact-links" style={{ marginTop: 10 }}>
+          <a href={`tel:${loan.phone}`}>
+            <Phone size={14} />
+            <span dir="ltr">{loan.phone}</span>
+          </a>
+          {wa && (
+            <a href={wa} target="_blank" rel="noreferrer">
+              <MessageCircle size={14} />
+              וואטסאפ
+            </a>
           )}
-          <span className="muted">
-            {fmtDate(loan.borrowedAt)} ← {fmtDate(loan.dueAt)} ({hebrewDateShort(loan.dueAt)})
-          </span>
         </div>
-        <div className="row">
-          {onExtend && (
-            <button
-              className="secondary"
-              onClick={onExtend}
-              aria-label={`הארכת ההשאלה של ${loan.borrowerName} בשבוע`}
-            >
-              <CalendarPlus size={15} />
-              +שבוע
-            </button>
-          )}
-          {onReturn && (
-            <button
-              className="secondary"
-              onClick={onReturn}
-              aria-label={`סימון ההשאלה של ${loan.borrowerName} כהוחזרה`}
-            >
-              <Check size={15} />
-              הוחזר
-            </button>
-          )}
-          {onUnreturn && (
-            <button
-              className="secondary"
-              onClick={onUnreturn}
-              aria-label={`ביטול החזרה של ${loan.borrowerName}`}
-            >
-              <RotateCcw size={15} />
-              בטל החזרה
-            </button>
-          )}
+      )}
+      <div className="card-actions">
+        {onExtend && (
           <button
-            className="danger"
-            onClick={onDelete}
-            aria-label={`מחיקת ההשאלה של ${loan.borrowerName}`}
+            className="secondary grow"
+            onClick={onExtend}
+            aria-label={`הארכת ההשאלה של ${loan.borrowerName} בשבוע`}
           >
-            <Trash2 size={15} />
-            מחיקה
+            <CalendarPlus size={15} />
+            +שבוע
           </button>
-        </div>
+        )}
+        {onReturn && (
+          <button
+            className="secondary grow"
+            onClick={onReturn}
+            aria-label={`סימון ההשאלה של ${loan.borrowerName} כהוחזרה`}
+          >
+            <Check size={15} />
+            הוחזר
+          </button>
+        )}
+        {onUnreturn && (
+          <button
+            className="secondary grow"
+            onClick={onUnreturn}
+            aria-label={`ביטול החזרה של ${loan.borrowerName}`}
+          >
+            <RotateCcw size={15} />
+            בטל החזרה
+          </button>
+        )}
+        <button
+          className="danger"
+          onClick={onDelete}
+          aria-label={`מחיקת ההשאלה של ${loan.borrowerName}`}
+        >
+          <Trash2 size={15} />
+          מחיקה
+        </button>
       </div>
-      {loan.notes && <div className="muted" style={{ marginTop: 6 }}>{loan.notes}</div>}
+      {loan.notes && <div className="muted" style={{ marginTop: 8 }}>{loan.notes}</div>}
     </div>
   );
 }
@@ -421,7 +424,7 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
               <button
                 key={d}
                 type="button"
-                className="btn-sm secondary"
+                className="secondary pill"
                 onClick={() => setDue(new Date(Date.now() + d * DAY).toISOString().slice(0, 10))}
               >
                 {d === 7 ? "שבוע" : "שבועיים"}
@@ -430,79 +433,88 @@ function NewLoan({ k, onDone }: { k: string; onDone: () => void }) {
             {chagEnd && (
               <button
                 type="button"
-                className="btn-sm secondary"
+                className="secondary pill"
                 onClick={() => setDue(chagEnd.toISOString().slice(0, 10))}
               >
                 אחרי החג
               </button>
             )}
           </div>
-          {due && (
-            <div className={"hint" + (isShabbat || dueHolidays.length > 0 ? " warn" : "")}>
-              {hebrewDateShort(dueDate.getTime())}
-              {dueHolidays.map((h) => ` · ${h}`)}
-              {isShabbat && (
-                <>
-                  {" · יום שבת — "}
-                  <button
-                    type="button"
-                    className="hint-action"
-                    onClick={() => {
-                      const sun = new Date(dueDate);
-                      sun.setDate(sun.getDate() + 1);
-                      setDue(sun.toISOString().slice(0, 10));
-                    }}
-                  >
-                    הזיזי ליום א׳
-                  </button>
-                </>
-              )}
-            </div>
-          )}
+          {due &&
+            (isShabbat || dueHolidays.length > 0 ? (
+              <div className="warn-box">
+                <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                <span>
+                  {hebrewDateShort(dueDate.getTime())}
+                  {dueHolidays.map((h) => ` · ${h}`)}
+                  {isShabbat && (
+                    <>
+                      {" · יום שבת — "}
+                      <button
+                        type="button"
+                        className="hint-action"
+                        onClick={() => {
+                          const sun = new Date(dueDate);
+                          sun.setDate(sun.getDate() + 1);
+                          setDue(sun.toISOString().slice(0, 10));
+                        }}
+                      >
+                        הזיזי ליום א׳
+                      </button>
+                    </>
+                  )}
+                </span>
+              </div>
+            ) : (
+              <div className="hint">{hebrewDateShort(dueDate.getTime())}</div>
+            ))}
         </div>
       </div>
 
       <div className="form-label">מפות</div>
       {items.length === 0 && <div className="muted">אין מפות במלאי — הוסיפי קודם בלשונית מלאי</div>}
-      {items.map((item) => {
-        const q = Math.min(qty[item._id] ?? 0, item.available);
-        const set = (v: number) =>
-          setQty({ ...qty, [item._id]: Math.max(0, Math.min(v, item.available)) });
-        const itemDesc = [item.name, item.size, item.color].filter(Boolean).join(" · ");
-        return (
-          <div key={item._id} className="row spread" style={{ padding: "6px 0" }}>
-            <span className="row" style={{ flexWrap: "nowrap" }}>
-              {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo sm" />}
-              <span>
-                {itemDesc} <span className="muted">(זמין {item.available})</span>
+      <div className="item-rows" style={{ marginTop: 4 }}>
+        {items.map((item) => {
+          const q = Math.min(qty[item._id] ?? 0, item.available);
+          const set = (v: number) =>
+            setQty({ ...qty, [item._id]: Math.max(0, Math.min(v, item.available)) });
+          const itemDesc = [item.name, item.size, item.color].filter(Boolean).join(" · ");
+          return (
+            <div key={item._id} className="item-row">
+              <span className="item-name">
+                {item.photoUrl && <img src={item.photoUrl} alt="" className="item-photo" />}
+                <span>
+                  {itemDesc}
+                  <span className="muted"> (זמין {item.available})</span>
+                </span>
               </span>
-            </span>
-            <span className="qty-input">
-              <button
-                type="button"
-                className="qty-btn"
-                onClick={() => set(q - 1)}
-                disabled={q === 0}
-                aria-label={`פחות אחת — ${itemDesc}`}
-              >
-                −
-              </button>
-              <span className="qty-val" aria-live="polite">
-                {q}
+              <span className="qty-input">
+                <button
+                  type="button"
+                  className="qty-btn"
+                  onClick={() => set(q - 1)}
+                  disabled={q === 0}
+                  aria-label={`פחות אחת — ${itemDesc}`}
+                >
+                  −
+                </button>
+                <span className="qty-val" aria-live="polite">
+                  {q}
+                </span>
+                <button
+                  type="button"
+                  className="qty-btn"
+                  onClick={() => set(q + 1)}
+                  disabled={q >= item.available}
+                  aria-label={`עוד אחת — ${itemDesc}`}
+                >
+                  +
+                </button>
               </span>
-              <button
-                type="button"
-                className="qty-btn"
-                onClick={() => set(q + 1)}
-                disabled={q >= item.available}
-                aria-label={`עוד אחת — ${itemDesc}`}
-              >
-                +
-              </button>
-            </span>
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
 
       <label htmlFor="notes">הערות</label>
       <input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />

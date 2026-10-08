@@ -7,7 +7,7 @@ body {
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   background: #f6f3ee;
   color: #2d2a26;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 ::selection {
@@ -22,7 +22,8 @@ body {
 #root {
   max-width: 720px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 0 16px;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
 }
 
 h1 {
@@ -103,11 +104,26 @@ h2 {
 }
 
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 2px 10px;
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.badge.plain::before {
+  display: none;
 }
 
 .badge.ok {
@@ -163,7 +179,6 @@ button:hover:not(:disabled) {
 
 button.secondary:hover:not(:disabled),
 .qty-btn:hover:not(:disabled),
-.tabs button:not(.active):hover:not(:disabled),
 .btn-sm:hover:not(:disabled) {
   background: #e3dac9;
   filter: none;
@@ -193,10 +208,6 @@ button.btn-sm {
   min-height: 36px;
   padding: 6px 12px;
   font-size: 0.85rem;
-}
-
-.item-line {
-  padding: 2px 0;
 }
 
 .hint-action {
@@ -238,21 +249,54 @@ label,
   margin: 12px 0 4px;
 }
 
-.tabs {
+/* fixed bottom tab bar — thumb reach on phones */
+.bottomnav {
+  position: fixed;
+  bottom: 0;
+  inset-inline: 0;
+  z-index: 20;
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  justify-content: space-around;
+  gap: 4px;
+  background: #fff;
+  border-top: 1px solid #e6e0d6;
+  padding: 6px 8px;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom));
 }
 
-.tabs button {
+.bottomnav-inner {
+  display: flex;
+  justify-content: space-around;
+  gap: 4px;
+  width: 100%;
+  max-width: 688px;
+  margin: 0 auto;
+}
+
+.tab-item {
   flex: 1;
-  background: #eee9e0;
-  color: #2d2a26;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: 6px 8px;
+  background: transparent;
+  color: #6f665a;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
-.tabs button.active {
-  background: #6d5c44;
-  color: #fff;
+.tab-item.on {
+  background: #f3ede3;
+  color: #6d5c44;
+}
+
+.tab-item:not(.on):hover:not(:disabled) {
+  background: #eee9e0;
+  filter: none;
 }
 
 .qty-input {
@@ -265,12 +309,13 @@ label,
   width: 44px;
   height: 44px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 999px;
   background: #eee9e0;
   color: #2d2a26;
   font-size: 1.2rem;
   font-weight: 600;
   line-height: 1;
+  border: 1px solid #d8d0c4;
 }
 
 .qty-val {
@@ -436,7 +481,29 @@ label,
 
 .login {
   max-width: 340px;
-  margin: 15vh auto 0;
+  margin: 12vh auto 0;
+}
+
+.brand-badge {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f3ede3;
+  color: #6d5c44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.login .card {
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.login input,
+.login button {
+  text-align: start;
 }
 
 .guide-overlay {
@@ -538,4 +605,237 @@ label,
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+/* --- Stitch refresh: shared patterns --- */
+
+/* sticky top bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f6f3ee;
+  padding: 12px 0;
+  margin-bottom: 6px;
+}
+
+.topbar-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #6d5c44;
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #6d5c44;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: #eee9e0;
+  filter: none;
+}
+
+.icon-btn.stone {
+  background: #eee9e0;
+  color: #2d2a26;
+  border: 1px solid #e6e0d6;
+}
+
+/* loan / person card structure */
+.loan-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e6e0d6;
+}
+
+.loan-dates {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #6f665a;
+  font-size: 0.85rem;
+  margin-top: 3px;
+}
+
+.item-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #f9f2ee;
+  border: 1px solid #e6e0d6;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.item-row .item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid #e6e0d6;
+}
+
+.card-actions .grow {
+  flex: 1;
+}
+
+/* inset info box (holders, waitlist) */
+.meta-box {
+  background: #f9f2ee;
+  border: 1px solid #e6e0d6;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: #6f665a;
+  margin-top: 8px;
+}
+
+.meta-box .mb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* amber warn box — shabbat/chag hint, waitlist signup */
+.warn-box {
+  background: #fdf0e0;
+  border: 1px solid #edd9b8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #7c4a00;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+/* filter chips */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chip {
+  min-height: 32px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #eee9e0;
+  color: #2d2a26;
+  border: 1px solid #e6e0d6;
+  white-space: nowrap;
+}
+
+.chip.on {
+  background: #6d5c44;
+  color: #fff;
+  border-color: #6d5c44;
+}
+
+.chip:not(.on):hover:not(:disabled) {
+  background: #e3dac9;
+  filter: none;
+}
+
+/* search field with leading icon */
+.search {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.search svg {
+  position: absolute;
+  inset-inline-start: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6f665a;
+  pointer-events: none;
+}
+
+.search input {
+  padding-inline-start: 40px;
+}
+
+/* inventory / catalog card media layout */
+.media-card {
+  display: flex;
+  gap: 12px;
+}
+
+.media-card .item-photo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.media-body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* section header row: title + actions */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-head h2 {
+  margin: 0;
+}
+
+/* per-item photo inside picker rows */
+.item-row .item-photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+/* shortcut pills under the due-date field */
+.pill {
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+/* catalog footer */
+.catalog-foot {
+  text-align: center;
+  color: #6f665a;
+  font-size: 0.85rem;
+  margin-top: 24px;
+  padding-bottom: 8px;
 }

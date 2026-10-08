@@ -68,23 +68,36 @@ export default function Calendar({ k }: { k: string }) {
 
   return (
     <>
-      <div className="row spread" style={{ marginBottom: 10 }}>
+      <div className="section-head">
         <button
-          className="secondary"
+          className="icon-btn stone"
           aria-label="חודש קודם"
           onClick={() => setMonth(new Date(first.getFullYear(), first.getMonth() - 1, 1))}
         >
           <ChevronRight size={20} />
         </button>
-        <h2 style={{ margin: 0 }}>{monthLabel}</h2>
+        <h2>{monthLabel}</h2>
         <button
-          className="secondary"
+          className="icon-btn stone"
           aria-label="חודש הבא"
           onClick={() => setMonth(new Date(first.getFullYear(), first.getMonth() + 1, 1))}
         >
           <ChevronLeft size={20} />
         </button>
       </div>
+      {dayKey(month.getTime()) !== dayKey(new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()) && (
+        <div className="row" style={{ justifyContent: "center", marginBottom: 10 }}>
+          <button
+            className="chip"
+            onClick={() => {
+              const d = new Date();
+              setMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+            }}
+          >
+            חזרה להיום
+          </button>
+        </div>
+      )}
 
       <div className="cal-grid" aria-label={monthLabel}>
         {DOW.map((d) => (
